@@ -1,0 +1,11 @@
+1-so when the screen darkens(means when all images will be blank.png), a sequence of icons will appear to show user the order in which the invitations need to be send(means when stamp.png will glow).
+
+2-Memorize the sequence of icons(means user will have to memorize the stamp.png sequence)
+
+3-When the screen lightens done(means when stamp.png order will be done),repeat the sequence by clicking on the icons in the correct order( once  stamp.png order will be done then we will allow the user to mark blank.png in same order stamp.png makes when user will start marking we will show highlight.png on click) once done we will show correct or incorrect.png on last mark by anaylizing if user has floow same order or not
+
+A sequence of icons will appear to show user the order in which the invitations needs to be send.
+Ignore this icon, this is just a distractor
+Memorize the sequence of icons, repeat the sequence by clicking on the icons in the correct order
+
+Once done we will show correct or incorrect on last mark by anaylizing if you has folloow same order or not

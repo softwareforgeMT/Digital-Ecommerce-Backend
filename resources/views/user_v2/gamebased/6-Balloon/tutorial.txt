@@ -1,0 +1,19 @@
+Pwc is advertising their office spaces to potential companies that are advertising the building
+1-You must inflate 45 ballons for thier event taking place later today.You can earn money for doing so.
+2-Pwc has agreed to pay you more money for bigger ballons because their logo will be more prominent.
+3-Press the space bar to inflate the ballon.
+4-The larger you inflate the ballon, the more money you can earn.
+5-Each pump increases the balloon's value by $0.05.
+6-Press Enter on your keyboard to exchange the balloon for money and save it to the bank.
+7-Inflate a balloon too much and it will burst.You will lose money that you haven't exchanged.
+8-Bank as much money as possible.
+
++++++++++++++++++++++++++
+The logic of this game is as follows:
+•	When the page loads, the game initializes with one balloon.
+•	The player can inflate the balloon by pressing the space bar. Each inflation increases the value of the balloon by $0.05.
+•	The player can bank the current value of the balloon by pressing the enter key. This adds the balloon's value to the banked money and starts a new balloon.
+•	However, each balloon has a random limit to how much it can be inflated. If the player inflates the balloon past this limit, the balloon bursts, and the player loses the current value of the balloon. The game then starts a new balloon.
+•	This process continues until the player has inflated 45 balloons, at which point the game ends and the total banked money is displayed.
+•	The player cannot inflate or bank a balloon while a modal message is being displayed. The game waits for the modal to be closed before allowing the player to continue.
+

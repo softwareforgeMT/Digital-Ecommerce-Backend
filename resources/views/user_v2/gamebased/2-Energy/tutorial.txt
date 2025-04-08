@@ -1,0 +1,4 @@
+The generators produces different amount of powers whic dont change.However due to fault they might drain a variable amount of power as well.
+So with each button press, You will either gain or lose power overall.
+This meter shows the total amount of power restored.
+You will given a large number of attempts to generate power, But choose wisely!

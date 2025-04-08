@@ -1,0 +1,20 @@
+1-You must guide visitors to the building using the computer terminal
+2- The Middle arrow indicates te best route
+3-Press P on your keyboard to continue
+4-Press Q on your keyboard if the arrow pointing to the left
+5-Press Q key on your keyboard to continue
+6-Sometime the arrows face in the same direction as the middle arrow
+7-Sometime face in opposite direction
+8-Sometime surrorunding shapes ae dashes.
+9-You should only focus on the middle arrow
+10-However when the suurounding are Xs, dont press either button
+
+
+-----------------------------------------------------------
+This code implements the following features:
+1.	Initializes game settings, including maximum attempts and the timeout duration.
+2.	Listens for a keyboard press and determines whether the key pressed was correct or incorrect based on the images displayed.
+3.	Generates new game rounds with randomly chosen images and varying number of rows.
+4.	Handles timeout and displays results accordingly.
+5.	After half of the maximum attempts have been made, it reduces the timeout duration to make the game more challenging.
+

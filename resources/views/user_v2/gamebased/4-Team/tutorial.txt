@@ -1,0 +1,9 @@
+
+1-At a company there are two teams, each of which has launched a new tablet computer in the market
+2-The profit that each team makes depends on the retail prices that both teams set.
+3-You are member of one team, & it is your role to set either high or low retail price.
+4-If you chosse too set a high price for your team & the other team also sets a high price each team will make profit of 200.
+5-However, If the other team sets a low price, your team will make 0.00 while the other team will make 300.
+6-If you set a low price for your team & the other teams sets a high price, your team will make a profit of 300 while other team will make a profit of 0.00 
+7-if both teams sets a low, each team will make a profit of 50.
+8.The other team will make a choice independent of user choice, but will learn from previous choices
