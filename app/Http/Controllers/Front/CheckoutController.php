@@ -3,158 +3,202 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
+use App\CentralLogics\CartLogics;
+use App\CentralLogics\Checkout;
 use Illuminate\Http\Request;
-use App\Models\Games;
-use App\Models\Product;
-use App\Models\PaymentGateway;
-use App\CentralLogics\ProductLogic;
-use App\CentralLogics\Helpers;
-use App\Models\SubPlan;
-use App\Models\Coupon;
+use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Support\Facades\DB;
+use Exception;
+use App\Models\GeneralSetting;
 
 class CheckoutController extends Controller
 {
-    public function __construct(Request $request)
+    public function __construct()
     {
         $this->middleware('auth');
-        $this->request = $request;
     }
-    public function cartStore(Request $request)
+
+    public function index()
     {
-      $validatedData = $request->validate([
-        'product_sku' => 'required|exists:products,sku',
-        'quantity' => 'required|integer|min:1',
-      ]);
-      $product_sku = $request->input('product_sku');
-      $quantity = $request->input('quantity');
-      $product = Product::where('sku', $product_sku)->active()->firstOrFail();
-
-        if ($quantity < $product->min_order_quantity) {
-            return redirect()->back()->with('error', 'Invalid quantity.');
-        }
-
-        if ($quantity > $product->stock) {
-            return redirect()->back()->with('error', 'Requested quantity is not available in stock.');
-        }
-      $cart = [
-        'product_sku' => $product->sku,
-        'quantity' => $quantity,
-      ];
-      session()->put('cart', $cart);
-      return redirect()->route('front.checkout');
-    }
-
-    public function checkout()
-    {
-        $cartValidate = ProductLogic::cartValidate();
-        if (is_array($cartValidate)) {
-            $initialprice = $cartValidate['initialprice'];
-            $checkoutfee = $cartValidate['checkoutfee'];
-            $totalprice = $cartValidate['totalprice'];
-            $product = $cartValidate['product'];
-            $quantity = $cartValidate['quantity'];
-            $paymentgateways=PaymentGateway::where('enabled',1)->get();
-
-            return view('front.checkout', compact('initialprice','product','totalprice','checkoutfee','paymentgateways'));
-        }
-        else{
-            return $cartValidate;
-        }
-
-    }
-
-    public function processPayment(Request $request)
-    {   
+        $cart = CartLogics::getOrCreateCart();
+        $gs = GeneralSetting::first();
         
-        $validatedData = $request->validate([
-            // 'game_username' => 'required',
-            'payment_gateway_name' => 'required',
-        ]);
-        $paymentGateway=$request->payment_gateway_name;
-        switch ($paymentGateway) {
-            case 'Wallet':                           
-                return app(WalletController::class)->processPayment($request);
-            case 'Paypal':
-                return app(PaypalController::class)->processPayment($request);
-            case 'Stripe':
-                return app(StripeController::class)->processPayment($request);
-            // Add cases for other payment methods here
-            default:
-                return back()->with('error', 'Invalid payment method.');
-        }
-    }
-
-    public function show(Request $request)
-    {
-        $subscriptions = SubPlan::where('status', 1)->get();
-        $selectedPlan = null;
-        
-        if ($request->has('subid')) {
-            $selectedPlan = SubPlan::findOrFail($request->subid);
+        // Redirect if cart is empty
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('front.products.index')
+                           ->with('error', 'Your cart is empty');
         }
 
-        return view('front.checkout.show', [
-            'subscriptions' => $subscriptions,
-            'selectedPlan' => $selectedPlan
-        ]);
-    }
-
-    public function applyCoupon(Request $request)
-    {
-        $validated = $request->validate([
-            'code' => 'required|string',
-            'subscription_id' => 'required|exists:sub_plans,id'
-        ]);
-
-        $coupon = Coupon::where('code', $validated['code'])
-                       ->where('status', 1)
-                       ->first();
-
-        if (!$coupon) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid coupon code'
-            ]);
+        // Validate stock before checkout
+        $stockValidation = CartLogics::validateStock($cart);
+        if (!$stockValidation['success']) {
+            return redirect()->route('front.cart.index')
+                           ->with('error', $stockValidation['message']);
         }
 
-        $subscription = SubPlan::find($validated['subscription_id']);
-        $discount = $coupon->discount_type === 'percentage' 
-            ? ($subscription->price * $coupon->discount / 100)
-            : $coupon->discount;
+        // Get user bit balance for the view
+        $userBitBalance = 0;
+        if (auth()->check()) {
+            $userBitBalance = auth()->user()->bit_balance;
+        }
 
-        return response()->json([
-            'success' => true,
-            'discount' => $discount,
-            'final_price' => $subscription->price - $discount
-        ]);
+        return view('front.checkout.index', compact('cart', 'userBitBalance', 'gs'));
     }
 
     public function process(Request $request)
     {
-        $validated = $request->validate([
-            'subscription_id' => 'required|exists:subscriptions,id',
-            'payment_method' => 'required|in:stripe,paypal',
-            'email' => 'required|email',
-            // Add other validation rules as needed
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            $cart = CartLogics::getOrCreateCart();
+            $gs = GeneralSetting::first();
+            
+            if ($cart->items->isEmpty()) {
+                return redirect()->back()->with('error', 'Your cart is empty');
+            }
 
-        // Process payment logic here
-        // This is where you'll integrate with your payment gateway
+            // Handle bit redemption
+            $bitsUsed = 0;
+            $bitsDiscount = 0;
+            
+            if (auth()->check() && $request->has('use_bits') && (int)$request->use_bits > 0) {
+                $user = auth()->user();
+                $bitsUsed = min((int)$request->use_bits, $user->bit_balance);
+                
+                // Calculate bit discount
+                $rawBitsDiscount = $bitsUsed * $gs->bit_value;
+                
+                // Cap discount to prevent negative total
+                // First, calculate max allowable discount (subtotal minus coupon discount)
+                $maxAllowableDiscount = max(0, $cart->subtotal - $cart->discount);
+                
+                // Ensure bit discount doesn't exceed max allowable
+                $bitsDiscount = min($rawBitsDiscount, $maxAllowableDiscount);
+                
+                // Recalculate bits used based on actual discount applied
+                // This ensures we only use the bits needed for the actual discount
+                $bitsUsed = ceil($bitsDiscount / $gs->bit_value);
+                
+                // Ensure we're not using more bits than available
+                $bitsUsed = min($bitsUsed, $user->bit_balance);
+                
+                // Recalculate final bits discount
+                $bitsDiscount = $bitsUsed * $gs->bit_value;
+                
+                // Log what we're doing for debugging
+                \Log::info("Bit redemption: {$bitsUsed} bits used for \${$bitsDiscount} discount. Max allowed: \${$maxAllowableDiscount}");
+            }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Payment processed successfully'
-        ]);
+            // Create order
+            $order = new Order([
+                'order_number' => Order::generateOrderNumber(),
+                'user_id' => auth()->id(),
+                'status' => 'pending',
+                'payment_status' => 'pending',
+                'payment_method' => $request->payment_method,
+                'subtotal' => $cart->subtotal,
+                'tax' => $cart->tax,
+                'shipping' => $cart->shipping ?? 0,
+                'discount' => $cart->discount, // Coupon discount
+                'bits_discount' => $bitsDiscount, // Separate bits discount
+                'bits_used' => $bitsUsed,
+                'total' => max(0, $cart->total - $bitsDiscount), // Ensure total isn't negative
+                'currency' => $cart->currency,
+                // Add shipping details
+                'shipping_name' => $request->shipping_name,
+                'shipping_email' => $request->shipping_email,
+                'shipping_phone' => $request->shipping_phone,
+                'shipping_address' => $request->shipping_address,
+                'shipping_city' => $request->shipping_city,
+                'shipping_state' => $request->shipping_state,
+                'shipping_zipcode' => $request->shipping_zipcode,
+                'shipping_country' => $request->shipping_country,
+                // Add billing details
+                'billing_name' => $request->billing_name,
+                'billing_email' => $request->billing_email,
+                'billing_phone' => $request->billing_phone,
+                'billing_address' => $request->billing_address,
+                'billing_city' => $request->billing_city,
+                'billing_state' => $request->billing_state,
+                'billing_zipcode' => $request->billing_zipcode,
+                'billing_country' => $request->billing_country,
+            ]);
+
+            $order->save();
+
+            // Deduct bits from user if used
+            if ($bitsUsed > 0) {
+                $user->deductBits(
+                    $bitsUsed,
+                    'order',
+                    $order->id,
+                    "Used for discount on order #{$order->order_number}"
+                );
+            }
+
+            // Create order items and update stock
+            foreach ($cart->items as $cartItem) {
+                $orderItem = OrderItem::createFromCartItem($cartItem);
+                $order->orderItems()->save($orderItem);
+            }
+
+            // Decrement stock after creating order items
+            CartLogics::decrementStock($order);
+
+            // Clear the cart after successful order creation
+            $cart->items()->delete();
+            $cart->update([
+                'subtotal' => 0,
+                'tax' => 0,
+                'total' => 0,
+                'discount' => 0
+            ]);
+
+            DB::commit();
+
+            // Redirect based on payment method
+            switch ($request->payment_method) {
+                case 'stripe':
+                    return app(StripeController::class)->redirect($order->order_number);
+                case 'paypal':
+                    return app(PaypalController::class)->redirect($order->order_number);
+                default:
+                    return redirect()->route('user.orders.show', $order->order_number)
+                                   ->with('success', 'Order placed successfully!');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Checkout Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
+    public function cancel($orderNumber)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $order = Order::where('order_number', $orderNumber)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
 
+            // Only restore stock if order wasn't cancelled before
+            if ($order->status !== 'cancelled') {
+                CartLogics::incrementStock($order);
+            }
 
-    // public function calculateCheckoutFee(Request $request)
-    // {
-    //    $checkoutfee=ProductLogic::calculateCheckoutFee($request->totalprice,$request->paymentMethod);      
-    //    $totalPrice=Helpers::setCurrency($request->totalprice+$checkoutfee);
-    //    $checkoutfee=Helpers::setCurrency($checkoutfee);
-    //    return response()->json(['checkoutfee' => $checkoutfee,'totalPrice' => $totalPrice]);
-    // }
+            $order->status = 'cancelled';
+            $order->save();
 
+            DB::commit();
+
+            return redirect()->route('user.orders.index')
+                ->with('success', 'Order has been cancelled and stock has been restored.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Order cancellation error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error cancelling order.');
+        }
+    }
 }

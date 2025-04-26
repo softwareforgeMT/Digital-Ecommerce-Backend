@@ -15,7 +15,12 @@
     <meta content="Maalik9272@gmail.com" name="author" />
     <!-- App favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/images/' . $gs->favicon) }}" />
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 
+    <!-- Custom styles -->
+    {{-- <link href="{{ asset('assets/admin/css/custom-styles.css') }}" rel="stylesheet" type="text/css" /> --}}
+    
+    <!-- Layout config Js -->
     @include('admin.layouts.head-css')
 </head>
 
@@ -43,7 +48,8 @@
 </div>
 <!-- END layout-wrapper -->
 
-{{-- @include('admin.layouts.customizer') --}}
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <!-- JAVASCRIPT -->
 @include('admin.layouts.vendor-scripts')

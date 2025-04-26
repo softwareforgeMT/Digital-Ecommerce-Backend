@@ -36,8 +36,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'affiliate_code',
         'phone',
+        'gender',
+        'photo',
+        'affiliate_code',
         'role_id',
         'referred_by',
         'niche',
@@ -117,24 +119,55 @@ class User extends Authenticatable
       return $this->hasMany(UserQuizBankAccess::class,'user_id');
     }
 
-   
+    public function orders()
+    {
+        return $this->hasMany(Order::class)->where('payment_status','!=','pending');
+    }
 
-    // public function subscriptionsActive()
-    // {   // Get the latest subscription for the user
-    //     $activeSubscription = $this->userSubscriptions()->orderBy('id', 'desc')->first();
-    //     // Check if the user has an active subscription
-    //     if ($activeSubscription) {
-    //         $plan = SubPlan::find($activeSubscription->subplan_id);
-    //         if ($plan) {
-    //             // Validate subscription with time interval
-    //             $interval = UserAccess::getTimeIntervalInDays($plan->interval);
-    //             if ($plan->interval === 'unlimited' || Carbon::now()->diffInDays($activeSubscription->created_at) <= $interval) {
-    //                 return true; // Active subscription
-    //             }
-    //         }
-    //     }
-    //     return false; // No active subscription
-    // }
+    public function bitSubmissions()
+    {
+        return $this->hasMany(BitSubmission::class);
+    }
+
+    public function bitTransactions()
+    {
+        return $this->hasMany(BitTransaction::class);
+    }
+
+    public function addBits($amount, $sourceType, $sourceId, $description)
+    {
+        $this->bit_balance += $amount;
+        $this->save();
+        
+        return BitTransaction::create([
+            'user_id' => $this->id,
+            'amount' => $amount,
+            'balance_after' => $this->bit_balance,
+            'source_type' => $sourceType,
+            'source_id' => $sourceId,
+            'description' => $description
+        ]);
+    }
+
+    public function deductBits($amount, $sourceType, $sourceId, $description)
+    {
+        if ($this->bit_balance < $amount) {
+            return false;
+        }
+        
+        $this->bit_balance -= $amount;
+        $this->save();
+        
+        return BitTransaction::create([
+            'user_id' => $this->id,
+            'amount' => -$amount,
+            'balance_after' => $this->bit_balance,
+            'source_type' => $sourceType,
+            'source_id' => $sourceId,
+            'description' => $description
+        ]);
+    }
+
     public function userSubscriptions()
     {
       return $this->hasMany(Subscriptions::class);

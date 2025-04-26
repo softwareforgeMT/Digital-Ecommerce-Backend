@@ -1,483 +1,725 @@
 @extends('admin.layouts.master')
-@section('title') Dashboard @endsection
-@section('css')
 
-    <link href="{{ URL::asset('assets/libs/jsvectormap/jsvectormap.min.css') }}" rel="stylesheet">
+@section('title')
+    Dashboard
+@endsection
+
+@section('css')
+    <!-- ApexCharts CSS -->
+    <link href="{{ asset('assets/admin/libs/apexcharts/apexcharts.min.css') }}" rel="stylesheet">
+<style>
+    .timeline-item{
+        padding-top: 2px !important;
+        margin-top:10px;
+    }
+</style>
 
 @endsection
+
 @section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">Dashboard</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    @component('components.breadcrumb')
-        @slot('li_1') Dashboards @endslot
-        @slot('title')  @endslot
-    @endcomponent
-
-
-        <div class="row m-3">
-            <div class="col">
-
-                <div class="h-100">
-                    <div class="row mb-3 pb-1">
-                        <div class="col-12">
-                            <div class="d-flex align-items-lg-center flex-lg-row flex-column">
-                                <div class="flex-grow-1">
+ <div class="row mb-3 pb-1">
+                <div class="col-12">
+                    <div class="d-flex align-items-lg-center flex-lg-row flex-column">
+                        <div class="flex-grow-1">
+                            <h4 class="fs-16 mb-1">{{ Helpers::getGreeting() }}, {{ucfirst(Auth::guard('admin')->user()->name) }}!</h4>
+                            <p class="text-muted mb-0">Here's what's happening with your store
+                                today.</p>
+                        </div>
+                        <div class="mt-3 mt-lg-0">
+                            
+                                <div class="row g-3 mb-0 align-items-center">
                                     
-                                    <h4 class="fs-16 mb-1">{{ Helpers::getGreeting() }}, {{ucfirst(Auth::guard('admin')->user()->name) }}!</h4>
-                                    <p class="text-muted mb-0">Here's what's happening with  {{$gs->name}} 
-                                        today.</p>
-                                </div>
-                                @if(Auth::guard('admin')->user()->id == 1 || Auth::guard('admin')->user()->sectionCheck('dashboard'))
-                                <div class="mt-3 mt-lg-0">                                                                    
-                                    <div class="row g-3 mb-0 align-items-center">
-                                        <form class="dashboard_date_filter_form" action="{{route('admin.dashboard')}}" method="get">  
-                                            <div class="col-sm-auto">
-                                                <div class="input-group">
-                                                    <input type="text"
-                                                        name="custom_date"
-                                                        class="form-control border-0 dash-filter-picker  shadow"
-                                                        data-provider="flatpickr" data-range-date="true"
-                                                        data-date-format="d M, Y"
-                                                        data-deafult-date="{{$selectedDates}}"
-                                                        value=""
-
-                                                        onchange="submitDashboardFilterForm(this)">
-                                                    <div
-                                                        class="input-group-text bg-primary border-primary text-white">
-                                                        <i class="ri-calendar-2-line"></i>
-                                                    </div>
-                                                    
-                                                </div>
-                                            </div>
-                                            @if($previousStartDate)
-                                            <p class="mb-0"><small>Compared to previous period ({{$previousStartDate->format('d M, Y')}} to {{$previousEndDate->format('d M, Y')}})</small></p>
-                                            @endif
-                                        </form>                                            
-                                        <!--end col-->
-                                        {{-- <div class="col-auto">
-                                            <div>
-                                                <button data-value="all" class="btn btn-soft-secondary btn-sm autoFilters">All</button>
-                                                <button data-value="1M" class="btn btn-soft-secondary btn-sm autoFilters">1M</button>
-                                                <button data-value="6M" class="btn btn-soft-secondary btn-sm autoFilters">6M</button>
-                                                <button data-value="1Y" class="btn btn-soft-primary btn-sm autoFilters">1Y</button>
-                                            </div>
-                                        </div> --}}
-                                        <!--end col-->
+                                    <!--end col-->
+                                    <div class="col-auto">
+                                        <a href="{{route('admin.product.create')}}" class="btn btn-soft-success"><i
+                                                class="ri-add-circle-line align-middle me-1"></i>
+                                            Add Product</a>
                                     </div>
-                                    <!--end row-->
+                                  
                                 </div>
-                                @endif
-                            </div><!-- end card header -->
+                                <!--end row-->
+                           
                         </div>
-                        <!--end col-->
+                    </div><!-- end card header -->
+                </div>
+                <!--end col-->
+            </div>
+
+
+    <!-- Quick Stats Cards Row -->
+    <div class="row g-4 mb-5">
+        <!-- Revenue Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-animate overflow-hidden dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar-sm ">
+                            <div class="avatar-title bg-primary bg-gradient text-white rounded-3 shadow-sm">
+                                <i class="ri-money-dollar-circle-line fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <p class="fw-medium text-uppercase text-muted mb-1 fs-14">Total Revenue</p>
+                            <h4 class="fs-22 fw-semibold mb-0">{{ Helpers::formatPrice($totalRevenue) }}</h4>
+                        </div>
                     </div>
-                    <!--end row-->
-                    @if(Auth::guard('admin')->user()->id == 1 || Auth::guard('admin')->user()->sectionCheck('dashboard')) 
-                        <!-- Sales card -->
-                        <div class="row">
-                           @include('admin.analytics.sales_card')
-                        </div> <!-- Sales card -->
-
-                        <div class="row">
-                            <div class="col-xl-8">
-                                @include('admin.analytics.sales_chart')
-
-                                 @include('admin.analytics.top_sellings')
-                            </div><!-- end col -->
-
-                            <div class="col-xl-4">
-                                 {{-- @include('admin.analytics.sales_by_programme') --}}
-
-                                 @include('admin.analytics.sales_by_coupon')
-                            </div><!-- end col -->
+                    <div class="d-flex align-items-center  gap-2 mb-3">
+                        <span class="badge {{ $revenueChange >= 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }}">
+                            <i class="ri-arrow-{{ $revenueChange >= 0 ? 'up' : 'down' }}-line align-bottom"></i>
+                            {{ abs($revenueChange) }}%
+                        </span>
+                        <span class="text-muted fs-12">from previous period</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="progress animated-progress custom-progress progress-sm">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ min($revenueTarget, 100) }}%" aria-valuenow="{{ $revenueTarget }}" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
-                    @endif
-
-                </div> <!-- end .h-100-->
-
-            </div> <!-- end col -->
-
-          
+                        <p class="text-muted fs-12 mb-0 mt-1">{{ $revenueTarget }}% of monthly target</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <!-- Orders Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-animate overflow-hidden dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar-sm ">
+                            <div class="avatar-title bg-info bg-gradient text-white rounded-3 shadow-sm">
+                                <i class="ri-shopping-bag-3-line fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <p class="fw-medium text-uppercase text-muted mb-1 fs-14">Total Orders</p>
+                            <h4 class="fs-22 fw-semibold mb-0">{{ $totalOrders }}</h4>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge {{ $ordersChange >= 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }}">
+                            <i class="ri-arrow-{{ $ordersChange >= 0 ? 'up' : 'down' }}-line align-bottom"></i>
+                            {{ abs($ordersChange) }}%
+                        </span>
+                        <span class="text-muted fs-12">from previous period</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                            <div class="badge bg-success-subtle text-success px-2 py-1">
+                                <i class="ri-checkbox-circle-line align-bottom"></i> {{ $completedOrders }} Completed
+                            </div>
+                            <div class="badge bg-warning-subtle text-warning px-2 py-1">
+                                <i class="ri-time-line align-bottom"></i> {{ $pendingOrders }} Pending
+                            </div>
+                            <div class="badge bg-danger-subtle text-danger px-2 py-1">
+                                <i class="ri-close-circle-line align-bottom"></i> {{ $cancelledOrders }} Cancelled
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-animate overflow-hidden dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar-sm ">
+                            <div class="avatar-title bg-success bg-gradient text-white rounded-3 shadow-sm">
+                                <i class="ri-user-3-line fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <p class="fw-medium text-uppercase text-muted mb-1 fs-14">Total Customers</p>
+                            <h4 class="fs-22 fw-semibold mb-0">{{ $totalCustomers }}</h4>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge {{ $customersChange >= 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }}">
+                            <i class="ri-arrow-{{ $customersChange >= 0 ? 'up' : 'down' }}-line align-bottom"></i>
+                            {{ abs($customersChange) }}%
+                        </span>
+                        <span class="text-muted fs-12">from previous period</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted fs-12">New this month: <span class="fw-semibold text-dark">{{ $newCustomersThisMonth }}</span></span>
+                            </div>
+                            <div>
+                                <span class="text-muted fs-12">Active: <span class="fw-semibold text-dark">{{ $activeCustomers }}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-animate overflow-hidden dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar-sm ">
+                            <div class="avatar-title bg-warning bg-gradient text-white rounded-3 shadow-sm">
+                                <i class="ri-stack-line fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="ms-3">
+                            <p class="fw-medium text-uppercase text-muted mb-1 fs-14">Total Products</p>
+                            <h4 class="fs-22 fw-semibold mb-0">{{ $totalProducts }}</h4>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge {{ $productsChange >= 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }}">
+                            <i class="ri-arrow-{{ $productsChange >= 0 ? 'up' : 'down' }}-line align-bottom"></i>
+                            {{ abs($productsChange) }}%
+                        </span>
+                        <span class="text-muted fs-12">from previous period</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-danger-subtle text-danger px-2 py-1">
+                                    <i class="ri-alert-line align-bottom"></i> {{ $lowStockProducts }} Low Stock
+                                </span>
+                            </div>
+                            <div>
+                                <span class="badge bg-info-subtle text-info px-2 py-1">
+                                    <i class="ri-check-double-line align-bottom"></i> {{ $activeProducts }} Active
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
+
+
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Sales Chart -->
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="card-title mb-0 flex-grow-1">Sales Overview</h5>
+                    <div class="flex-shrink-0">
+                        <div class="dropdown card-header-dropdown">
+                            <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown">
+                                <span class="fw-semibold text-uppercase fs-12">Sort By:</span>
+                                <span class="text-muted">
+                                    {{ $salesOverviewPeriod }}
+                                    <i class="mdi mdi-chevron-down ms-1"></i>
+                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a class="dropdown-item {{ $period == '7days' ? 'active' : '' }}"
+                                   href="{{ route('admin.dashboard', ['period' => '7days']) }}">
+                                    Last 7 Days
+                                </a>
+                                <a class="dropdown-item {{ $period == '30days' ? 'active' : '' }}"
+                                   href="{{ route('admin.dashboard', ['period' => '30days']) }}">
+                                    Last 30 Days
+                                </a>
+                                <a class="dropdown-item {{ $period == 'month' ? 'active' : '' }}"
+                                   href="{{ route('admin.dashboard', ['period' => 'month']) }}">
+                                    This Month
+                                </a>
+                                <a class="dropdown-item {{ $period == 'year' ? 'active' : '' }}"
+                                   href="{{ route('admin.dashboard', ['period' => 'year']) }}">
+                                    This Year
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0 pb-2">
+                    <div id="sales-analytics-chart" class="apex-charts" style="height: 380px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Status Distribution -->
+        <div class="col-xl-4">
+            <div class="card card-height-100">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="card-title mb-0 flex-grow-1">Order Status Distribution</h5>
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('admin.orders.index') }}" class="btn btn-soft-primary btn-sm">
+                            <i class="ri-file-list-3-line align-middle"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="order-status-chart" class="apex-charts" style="height: 270px;"></div>
+
+                    <div class="mt-3 pt-2">
+                        <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                            <p class="text-body mb-0">
+                                <i class="ri-checkbox-blank-circle-fill text-success align-middle me-2"></i> Completed
+                            </p>
+                            <div>
+                                <span class="text-dark fw-medium">{{ $orderStatusCounts['completed'] ?? 0 }}</span>
+                                ({{ $orderStatusPercentages['completed'] ?? 0 }}%)
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                            <p class="text-body mb-0">
+                                <i class="ri-checkbox-blank-circle-fill text-warning align-middle me-2"></i> Pending
+                            </p>
+                            <div>
+                                <span class="text-dark fw-medium">{{ $orderStatusCounts['pending'] ?? 0 }}</span>
+                                ({{ $orderStatusPercentages['pending'] ?? 0 }}%)
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
+                            <p class="text-body mb-0">
+                                <i class="ri-checkbox-blank-circle-fill text-danger align-middle me-2"></i> Cancelled
+                            </p>
+                            <div>
+                                <span class="text-dark fw-medium">{{ $orderStatusCounts['cancelled'] ?? 0 }}</span>
+                                ({{ $orderStatusPercentages['cancelled'] ?? 0 }}%)
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <p class="text-body mb-0">
+                                <i class="ri-checkbox-blank-circle-fill text-info align-middle me-2"></i> Processing
+                            </p>
+                            <div>
+                                <span class="text-dark fw-medium">{{ $orderStatusCounts['processing'] ?? 0 }}</span>
+                                ({{ $orderStatusPercentages['processing'] ?? 0 }}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Recent Activity Row -->
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-xl-6">
+            <div class="card card-height-100">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="card-title mb-0 flex-grow-1">Recent Orders</h5>
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('admin.orders.index') }}" class="btn btn-soft-info btn-sm">
+                            <i class="ri-file-list-3-line align-middle"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="table-responsive table-card">
+                        <table class="table table-borderless table-nowrap align-middle mb-0">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Customer</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Amount</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($recentOrders as $order)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('admin.orders.show', $order->id) }}"
+                                               class="fw-medium link-primary">#{{ $order->order_number }}</a>
+                                        </td>
+                                        <td>{{ $order->user ? Str::limit($order->user->name, 15) : 'Guest' }}</td>
+                                        <td>{{ $order->created_at->format('d M') }}</td>
+                                        <td>{{ Helpers::formatPrice($order->total) }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {{ $order->status == 'completed' ? 'bg-success' : '' }}
+                                                {{ $order->status == 'pending' ? 'bg-warning' : '' }}
+                                                {{ $order->status == 'processing' ? 'bg-info' : '' }}
+                                                {{ $order->status == 'cancelled' ? 'bg-danger' : '' }}
+                                            ">
+                                                {{ ucfirst($order->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">No recent orders</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="col-xl-6">
+            <div class="card card-height-100">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="card-title mb-0 flex-grow-1">Top Selling Products</h5>
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('admin.product.index') }}" class="btn btn-soft-info btn-sm">
+                            <i class="ri-eye-line align-middle"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="table-responsive table-card">
+                        <table class="table table-borderless table-nowrap align-middle mb-0">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th scope="col">Product</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Sold</th>
+                                    <th scope="col">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($topSellingProducts as $product)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-2">
+                                                    <img src="{{ Helpers::image($product->main_image, 'products/') }}" alt="" class="avatar-xs rounded-circle">
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <a href="{{ route('admin.product.edit', $product->id) }}" class="fw-medium link-primary text-truncate" style="max-width: 150px; display: inline-block;">
+                                                        {{ $product->name }}
+                                                    </a>
+                                                    <small class="text-muted d-block">
+                                                        {{ $product->category ? $product->category->name : 'Uncategorized' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ Helpers::formatPrice($product->price) }}</td>
+                                        <td><span class="text-success fw-medium">{{ $product->total_sold }}</span></td>
+                                        <td>{{ Helpers::formatPrice($product->total_revenue) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center py-3">No product sales data available</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Activity & Stock Alerts -->
+     <div class="row g-4 mb-5">
+        <!-- Recent Activity -->
+        <div class="col-xl-8">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center">
+                    <h5 class="card-title mb-0 flex-grow-1">Recent Activity</h5>
+                    <div class="flex-shrink-0">
+                        <button type="button" class="btn btn-soft-secondary btn-sm rounded-pill">
+                            <i class="ri-refresh-line align-middle me-1"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="px-3 pt-3" data-simplebar style="max-height: 400px;">
+                        <ul class="list-unstyled mb-0">
+                            @forelse($recentActivity as $activity)
+                                <li class="pb-3 mb-3 {{ !$loop->last ? 'border-bottom ' : '' }}">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-sm">
+                                                <div class="avatar-title rounded-circle 
+                                                    @if($activity['type'] == 'order')
+                                                        bg-primary bg-opacity-10 text-primary
+                                                    @elseif($activity['type'] == 'user')
+                                                        bg-success bg-opacity-10 text-success
+                                                    @elseif($activity['type'] == 'product')
+                                                        bg-info bg-opacity-10 text-info
+                                                    @elseif($activity['type'] == 'review')
+                                                        bg-warning bg-opacity-10 text-warning
+                                                    @else
+                                                        bg-secondary bg-opacity-10 text-secondary
+                                                    @endif d-flex align-items-center justify-content-center">
+                                                    @if($activity['type'] == 'order')
+                                                        <i class="ri-shopping-bag-line fs-5"></i>
+                                                    @elseif($activity['type'] == 'user')
+                                                        <i class="ri-user-add-line fs-5"></i>
+                                                    @elseif($activity['type'] == 'product')
+                                                        <i class="ri-store-2-line fs-5"></i>
+                                                    @elseif($activity['type'] == 'review')
+                                                        <i class="ri-star-line fs-5"></i>
+                                                    @else
+                                                        <i class="ri-notification-line fs-5"></i>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <p class="text-body mb-1">{!! $activity['message'] !!}</p>
+                                            <p class="text-muted fs-12 mb-0">
+                                                <i class="mdi mdi-clock-outline align-middle me-1"></i> {{ $activity['time'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="text-center py-5">
+                                    <i class="ri-calendar-check-line fs-2 text-muted mb-2 d-block"></i>
+                                    <p class="text-muted mb-0">No recent activity</p>
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Alerts -->
+        <div class="col-xl-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center">
+                    <h5 class="card-title mb-0 flex-grow-1">Inventory Alerts</h5>
+                    <div class="flex-shrink-0">
+                        <button type="button" class="btn btn-soft-danger btn-sm rounded-pill">
+                            <i class="ri-alert-line align-middle me-1"></i> {{ count($lowStockProductsList) }} Items
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="px-3 pt-3" data-simplebar style="max-height: 400px;">
+                        <div class="vstack gap-3">
+                            @forelse($lowStockProductsList as $product)
+                                <div class="p-3 border  rounded">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="avatar-sm">
+                                                <div class="avatar-title bg-danger bg-opacity-10 text-danger rounded d-flex align-items-center justify-content-center">
+                                                    <i class="ri-error-warning-line fs-5"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3 overflow-hidden">
+                                            <h6 class="fs-14 mb-1 text-truncate">
+                                                <a href="{{ route('admin.product.edit', $product->id) }}" class="link-dark text-decoration-none">
+                                                    {{ $product->name }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-muted mb-0 small">SKU: {{ $product->sku }}</p>
+                                        </div>
+                                        <div class="flex-shrink-0 ms-2">
+                                            <span class="badge rounded-pill {{ $product->quantity <= 0 ? 'bg-danger' : 'bg-warning' }}">
+                                                {{ $product->quantity <= 0 ? 'Out of Stock' : 'Low Stock: ' . $product->quantity }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-5">
+                                    <div class="avatar-lg mx-auto mb-4">
+                                        <div class="avatar-title bg-success bg-opacity-10 text-success fs-1 rounded d-flex align-items-center justify-content-center">
+                                            <i class="ri-check-double-line"></i>
+                                        </div>
+                                    </div>
+                                    <h5 class="mb-1">All products in stock</h5>
+                                    <p class="text-muted mb-0">No inventory alerts at the moment.</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top text-center py-3">
+                    <a href="{{ route('admin.product.index') }}" class="link-secondary text-decoration-none">
+                        View All Inventory <i class="ri-arrow-right-line align-middle ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
 @section('script')
-    <!-- apexcharts -->
-    {{-- <script src="{{ URL::asset('/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-    <script src="{{ URL::asset('assets/libs/jsvectormap/jsvectormap.min.js') }}"></script> --}}
-    {{-- <script src="{{ URL::asset('assets/libs/jsvectormap//world-merc.js') }}"></script> --}}
-
-    <!-- dashboard init -->
-    {{-- <script src="{{ URL::asset('/assets/js/pages/dashboard-analytics.init.js') }}"></script> --}}
-
-<script src="{{ URL::asset('/assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<script src="{{ URL::asset('/assets/libs/jsvectormap/jsvectormap.min.js') }}"></script>
-{{-- <script src="{{ URL::asset('assets/libs/swiper/swiper.min.js')}}"></script> --}}
-<!-- dashboard init -->
-<script src="{{ URL::asset('/assets/js/pages/dashboard-ecommerce.init.js') }}"></script>
-{{-- <script src="{{ URL::asset('/assets/js/pages/dashboard-analytics.init.js') }}"></script> --}}
-{{-- <script src="{{ URL::asset('/assets/js/app.min.js') }}"></script> --}}
-
-<script type='text/javascript' src="{{ URL::asset('assets/libs/choices.js/choices.js.min.js')}}"></script>
-<script type='text/javascript' src="{{ URL::asset('assets/libs/flatpickr/flatpickr.min.js')}}"></script>
-<script type='text/javascript' src="{{ URL::asset('assets/js/seperateplugins.min.js')}}"></script>
-
-<script>
-    // function submitDashboardFilterForm() {
-    //     document.getElementById('dashboard_date_filter_form').submit();
-    // }
-    function submitDashboardFilterForm(element) {
-        const calendarInstance = element._flatpickr;
-        calendarInstance.config.onClose.push(() => {
-            const selectedDates = element.value.split(" to ");
-            const startDate = selectedDates[0].trim();
-            const endDate = selectedDates[1].trim();
-
-            if (startDate && endDate) {
-               // Remove the input element if it exists
-               $('.dashboard_date_filter_form input[name="auto_date"]').remove();
-               $('.dashboard_date_filter_form').submit();
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof ApexCharts === 'undefined') {
+                console.error('ApexCharts is not loaded!');
+                return;
             }
+
+            // --- Sales Overview Bar Chart ---
+            var salesData  = @json($salesChartData);
+            var orderData  = @json($ordersChartData);
+            var categories = @json($salesChartLabels);
+
+            var barOptions = {
+                series: [
+                    {
+                        name: 'Revenue',
+                        data: salesData
+                    },
+                    {
+                        name: 'Orders',
+                        data: orderData
+                    }
+                ],
+                chart: {
+                    type: 'bar',
+                    height: 380,
+                    toolbar: { show: false },
+                    zoom:    { enabled: false }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '50%',
+                        borderRadius: 4
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: categories,
+                    labels: {
+                        rotate: -45,
+                        style: { fontSize: '12px' }
+                    }
+                },
+                yaxis: [
+                    {
+                        title: {
+                            text: 'Revenue'
+                        },
+                        labels: {
+                            formatter: function(val) {
+                                return "{{ Helpers::getCurrencySymbol() }}" + val.toFixed(0);
+                            }
+                        }
+                    },
+                    {
+                        opposite: true,
+                        title: {
+                            text: 'Orders'
+                        },
+                        labels: {
+                            formatter: function(val) {
+                                return val.toFixed(0);
+                            }
+                        }
+                    }
+                ],
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    y: [
+                        {
+                            formatter: function(val) {
+                                return "{{ Helpers::getCurrencySymbol() }}" + val.toFixed(2);
+                            }
+                        },
+                        {
+                            formatter: function(val) {
+                                return val + " orders";
+                            }
+                        }
+                    ]
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    offsetY: -10
+                },
+                colors: ['#4f46e5', '#10b981'],
+                responsive: [
+                    {
+                        breakpoint: 768,
+                        options: {
+                            chart: { height: 300 },
+                            plotOptions: {
+                                bar: { columnWidth: '70%' }
+                            }
+                        }
+                    }
+                ]
+            };
+
+            new ApexCharts(
+                document.querySelector("#sales-analytics-chart"),
+                barOptions
+            ).render();
+
+            // --- Order Status Donut Chart ---
+            var statusData   = @json(array_values($orderStatusCounts));
+            var statusLabels = @json(array_keys($orderStatusCounts));
+            var statusColors = {
+                completed: '#10b981',
+                pending:   '#f59e0b',
+                cancelled: '#ef4444',
+                processing:'#3b82f6',
+                shipped:   '#8b5cf6',
+                delivered: '#10b981',
+                refunded:  '#6b7280'
+            };
+            var chartColors = statusLabels.map(s => statusColors[s] || '#6b7280');
+
+            var donutOptions = {
+                series: statusData,
+                chart: { type: 'donut', height: 270 },
+                labels: statusLabels.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+                colors: chartColors,
+                legend: { show: false },
+                dataLabels: { enabled: false },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '75%',
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    label: 'Total Orders',
+                                    formatter: function(w) {
+                                        return w.globals.seriesTotals.reduce((a,b) => a + b, 0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            new ApexCharts(
+                document.querySelector("#order-status-chart"),
+                donutOptions
+            ).render();
         });
-    }
-
-
-    $(document).ready(function() {
-      $('.autoFilters').click(function() {
-        var value = $(this).data('value');
-        var startDate, endDate;
-        var currentDate = new Date();
-
-
-        if (value === 'all') {
-            // Create and add the input element to the form
-            var input = $('<input>').attr('type', 'hidden').attr('name', 'auto_date').val('all');
-            $('.dashboard_date_filter_form').append(input);
-            // Empty the flatpicker
-            $('.dashboard_date_filter_form input[name="custom_date"]').val('');
-        } else {
-            // Remove the input element if it exists
-            $('.dashboard_date_filter_form input[name="auto_date"]').remove();
-           switch (value) {
-            case '1M':
-              startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getDate());
-              endDate = currentDate;
-              break;
-            case '6M':
-              startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 6, currentDate.getDate());
-              endDate = currentDate;
-              break;
-            case '1Y':
-              startDate = new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), currentDate.getDate());
-              endDate = currentDate;
-              break;
-            default:
-              startDate = new Date(currentDate.getFullYear() - 100, 0, 1);
-              endDate = currentDate;
-          }
-            console.log(startDate);
-            var dateInput = $('.dashboard_date_filter_form input[name="custom_date"]');
-            var flatpickrInstance = dateInput[0]._flatpickr;
-            flatpickrInstance.setDate([startDate, endDate]);
-        }
-        
-        $('.dashboard_date_filter_form').submit();
-
-      });
-    });
-
-
-
-    // $(document).ready(function() {
-    //     $('.autoFilters').click(function() {
-    //         var value = $(this).data('value');
-    //         $('.dashboard_date_filter_form input[name="auto_date"]').val(value);
-    //         $('.dashboard_date_filter_form input[name="custom_date"]').val('');
-    //         $('.dashboard_date_filter_form').submit();
-    //     });
-    // });
-</script>
-
-
-<script>
-var chartElement = document.querySelector("#customer_impression_charts_1");
-if (chartElement) {
-  var chartData = {
-    series: [
-      {
-        name: "Orders",
-        type: "area",
-         // data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67]
-        // data: [4, 5, 3, 7, 3, 1, 2, 4, 7, 5, 3, 1]
-        data: [
-          @foreach ($salesGraphData as $data)
-            {{ $data->ordersCount }},
-          @endforeach
-        ]
-      },
-      {
-        name: "Sales",
-        type: "bar",
-        // data: [89.25, 98.58, 68.74, 108.87, 77.54, 84.03, 51.24, 28.57, 92.57, 42.36, 88.51, 36.57]
-        data: [
-          @foreach ($salesGraphData as $data)
-            {{ $data->salesAmount }},
-          @endforeach
-        ]
-      }
-    ],
-    chart: {
-      height: 370,
-      type: "line",
-      toolbar: {
-        show: false
-      }
-    },
-    stroke: {
-      curve: "straight",
-      dashArray: [0, 0, 8],
-      width: [2, 0, 2.2]
-    },
-    fill: {
-      opacity: [0.1, 0.9, 1]
-    },
-    markers: {
-      size: [0, 0, 0],
-      strokeWidth: 2,
-      hover: {
-        size: 4
-      }
-    },
-    xaxis: {
-      categories: [
-        @foreach ($salesGraphData as $data)
-          "{{ $data->date }}",
-        @endforeach
-      ],
-        // categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-      axisTicks: {
-        show: false
-      },
-      axisBorder: {
-        show: false
-      }
-    },
-    grid: {
-      show: true,
-      xaxis: {
-        lines: {
-          show: true
-        }
-      },
-      yaxis: {
-        lines: {
-          show: false
-        }
-      },
-      padding: {
-        top: 0,
-        right: -2,
-        bottom: 15,
-        left: 10
-      }
-    },
-    legend: {
-      show: true,
-      horizontalAlign: "center",
-      offsetX: 0,
-      offsetY: -5,
-      markers: {
-        width: 9,
-        height: 9,
-        radius: 6
-      },
-      itemMargin: {
-        horizontal: 10,
-        vertical: 0
-      }
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: "30%",
-        barHeight: "70%"
-      }
-    },
-    colors: ["#28c76f", "#7367f0"],
-    tooltip: {
-      shared: true,
-      y: [
-        {
-          formatter: function (val) {
-            return val !== undefined ? val.toFixed(0) : val;
-          }
-        },
-        {
-          formatter: function (val) {
-            return val !== undefined ? "$" + (val.toFixed(2)) : val;
-          }
-        }
-      ]
-    }
-  };
-
-  var chart = new ApexCharts(chartElement, chartData);
-  chart.render();
-}
-
-// User by devices
-// var dountchartUserDeviceColors = getChartColorsArray("user_device_pie_charts");
-
-// var options = {
-//   series: [200, 80],
-//   labels: ["Internship", "Graduate"],
-//   chart: {
-//     type: "donut",
-//     height: 219,
-//   },
-//   plotOptions: {
-//     pie: {
-//       size: 50,
-//       donut: {
-//         size: "85%",
-//         labels: {
-//           show: true,
-//           total: {
-//             show: true,
-//             label: "Total customers",
-//             fontSize: "16px",
-//             fontFamily: "Arial",
-//             fontWeight: 600,
-//             color: "#000",
-//           },
-//            value: {
-//                 show: true,
-//                 fontSize: "20px",
-//                 color: "#343a40",
-//                  fontSize: "18px",
-//                 fontWeight: 800,
-//             },
-//         },
-//       },
-//     },
-//   },
-//   legend: {
-//     show: false,
-//   },
-//   dataLabels: {
-//             enabled: false,
-//         },
-//   colors: ["#1abc9c", "#3498db"],
-// };
-
-// var chart = new ApexCharts(
-//   document.querySelector("#user_preferences_pie_charts"),
-//   options
-// );
-// chart.render();
-
-
-// var options2 = {
-//   series: [200, 80],
-//   labels: ["Coupon", "Without Coupon"],
-//   chart: {
-//     type: "donut",
-//     height: 219,
-//   },
-//   plotOptions: {
-//     pie: {
-//       size: 50,
-//       donut: {
-//         size: "85%",
-//         labels: {
-//           show: true,
-//           total: {
-//             show: true,
-//             label: "Total Orders",
-//             fontSize: "16px",
-//             fontFamily: "Arial",
-//             fontWeight: 600,
-//             color: "#000",
-//           },
-//            value: {
-//                 show: true,
-//                 fontSize: "20px",
-//                 color: "#343a40",
-//                  fontSize: "18px",
-//                 fontWeight: 800,
-//             },
-//         },
-//       },
-//     },
-//   },
-//   legend: {
-//     show: false,
-//   },
-//   dataLabels: {
-//             enabled: false,
-//         },
-//   colors: ["#1abc9c", "#3498db"],
-// };
-
-// var chart = new ApexCharts(
-//   document.querySelector("#sales_by_coupon_pie_charts"),
-//   options
-// );
-// chart.render();
-
-
-
-document.querySelectorAll('.apex-charts-dashboard').forEach(function(chartContainer) {
-  var series = JSON.parse(chartContainer.dataset.series);
-  var labels = JSON.parse(chartContainer.dataset.labels);
-  var totalLabel = chartContainer.dataset.totalLabel;
-
-  var options = {
-    series: series,
-    labels: labels,
-    chart: {
-      type: "donut",
-      height: 219,
-    },
-    plotOptions: {
-      pie: {
-        size: 50,
-        donut: {
-          size: "85%",
-          labels: {
-            show: true,
-            total: {
-              show: true,
-              label: totalLabel,
-              fontSize: "16px",
-              fontFamily: "Arial",
-              fontWeight: 600,
-              color: "#000",
-            },
-            value: {
-              show: true,
-              fontSize: "20px",
-              color: "#343a40",
-              fontWeight: 800,
-            },
-          },
-        },
-      },
-    },
-    legend: {
-      show: false,
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    colors: ["#1abc9c", "#3498db"],
-  };
-
-  var chart = new ApexCharts(chartContainer, options);
-  chart.render();
-});
-
-
-</script>
-
+    </script>
 @endsection

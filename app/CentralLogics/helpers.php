@@ -93,66 +93,20 @@ class Helpers
          return $slug=Str::slug($slug,'-');
     }
 
-    public static function quizSlug($quizGroup,$dataId)
+    public static function getGreeting($value='')
     {
-        $quizGroup = implode('', array_map(fn($word) => $word[0], explode(' ', $quizGroup)));
+        $currentTime = Carbon::now();
+        $hour = $currentTime->hour;
 
-        //$questType = substr($questType, 0, 2);
-        $slug = self::slug($quizGroup.'-'.$dataId);
-        //return $slug=Str::slug($slug,'-').'-'.strtolower(Str::random(3));
-        return $slug;
+        if ($hour >= 5 && $hour < 12) {
+            return 'Good Morning';
+        } elseif ($hour >= 12 && $hour < 18) {
+            return 'Good Afternoon';
+        } else {
+            return 'Good Evening';
+        }
     }
 
-    public static function getAssessmentType(){
-      return $getAssessmentType= ['0'=>'Online Immersive Assessment','1' => 'Video Interview', '2' => 'Game-based Assessment', '3' => 'Assessment Centre'];
-    }
-    public static function getQuestionTypes(){
-      return $getQuestionTypes= ['0'=>'Basic','1' => 'Self-Recorded', '2' => 'Game-based','3'=>'Case Study','Pdf-based'];
-    }
-
-   public static function getGames(){
-        return [
-            '1' => '1-Sequence',
-            '2' => '2-Energy',
-            '3' => '3-Direction',
-            '4' => '4-Team',
-            '5' => '5-Ticket',
-            '6' => '6-Balloon',
-            '7' => '7-Security',
-            '8' => '8-MoneyExchange',
-            '9' => '9-KeyPresses',
-            '10' => '10-Digits',
-            '11' => '11-Easy-Hard',
-            '12' => '12-Stop',
-            '13' => '13-Cards',
-            '14' => '14-Lengths',
-            '15' => '15-Towers',
-            '16' => '16-Faces'
-        ];
-    }
-
-
-    public static function getEventTypes(){
-      return $getQuestionTypes= ['0'=>'Assessment Simulation','1' => 'Experience Sharing','2'=>'Q&A Sessions','3' => 'Others'];
-    }
-
-    public static function  calculateSellerFeedbackScore(int $sellerId): array
-    {
-        $totalRatedOrders = Rating::where('seller_id', $sellerId)
-        ->count();
-        $totalPositiveRatings = Rating::where('seller_id', $sellerId)
-            ->where('rating', 1)
-            ->active()->count();
-
-        $totalNegativeRatings = Rating::where('seller_id', $sellerId)
-            ->where('rating', 0)
-            ->active()->count();
-        $feedbackScore = $totalRatedOrders > 0 ? round(($totalPositiveRatings / $totalRatedOrders) * 100) : 0;
-        return [
-            'total_rated_orders' => $totalRatedOrders,
-            'feedback_score' => $feedbackScore,
-        ];
-    }
 
     
 
@@ -254,83 +208,85 @@ class Helpers
        return ucfirst($interval);
     }
     
-    public static function quizName($quiz_slug) {
 
-        $quiz = \App\Models\QuizBank::where('slug', $quiz_slug)->first();
+
+
+    public static function formatPrice($price)
+    {
+        $gs = GeneralSetting::first();
+        $price = number_format($price, 2);
         
-        //it will modify $slug = "est-accusantium-non-ba252" with "Est Accusantium Non";
-        //$name = ucwords(str_replace('-', ' ', preg_replace('/-\d+$|(?<=\D)\d+$/', '', $quiz_slug)));
-        if (!$quiz) {
-            return  ''; // or throw an exception if you prefer
-        }
-
-        $words = explode(" ", $quiz->quiz_group); // Split the string into an array of words
-        $firstLetters = array_map(function($word) {
-            return strtoupper($word[0]);
-        }, $words);
-        $name = implode('', $firstLetters);
-
-        $quizzesInGroup = \App\Models\QuizBank::where('quizbankmanagement_id', $quiz->quizbankmanagement_id)
-                                             ->where('quiz_group', $quiz->quiz_group)
-                                             ->orderBy('created_at', 'asc')
-                                             ->active()
-                                             ->get();
-                                             
-        $index = $quizzesInGroup->search(function ($q) use ($quiz) {
-            return $q->id === $quiz->id;
-        });
-
-        $position= $index !== false ? $index + 1 : null;
-
-       // Format the position with leading zeros if it's a single-digit number
-       $formattedPosition = ($position !== null && $position >= 1 && $position <= 9) ? sprintf('%02d', $position) : $position;
-
-        return $name.' '.$formattedPosition;
-        // $quizGroupWords = ucwords(strtolower($request->quiz_group));
-       // $name= ucwords(str_replace('-', ' ', $quiz_slug));
-       // return $name;
+        return $gs->currency_format == 1 ? "$".$price : $price."$";
     }
 
-    public static function getLanguages($value='')
+    public static function getCurrency()
     {
-       // return $commonLanguages = ['English', 'Chinese', 'Spanish', 'French', 'German'];
-            return [
-                ['id' => 1, 'name' => 'English'],
-                ['id' => 2, 'name' => 'Chinese'],
-                ['id' => 3, 'name' => 'Spanish'],
-                ['id' => 4, 'name' => 'French'],
-                ['id' => 5, 'name' => 'German'],
-            ];
-
-    }
-    public static function getGreeting($value='')
-    {
-        $currentTime = Carbon::now();
-        $hour = $currentTime->hour;
-
-        if ($hour >= 5 && $hour < 12) {
-            return 'Good Morning';
-        } elseif ($hour >= 12 && $hour < 18) {
-            return 'Good Afternoon';
-        } else {
-            return 'Good Evening';
-        }
+        return GeneralSetting::first()->currency ?? 'USD';
     }
 
-    public static function getScheduleInterval($repeat_interval='')
+    public static function getCurrencySymbol()
     {
-        switch ($repeat_interval) {
-            case 'weekly':
-                return 'Weekly';
-            case 'biweekly':
-                return 'Every 2 weeks';
-            case 'triweekly':
-                return 'Every 3 weeks';
-            case 'quadweekly':
-                return 'Every 4 weeks';
-            default:
-                return '';
-        }  
+        return '$';
+    }
+
+
+    public static function getTaxRate()
+    {
+        return GeneralSetting::first()->tax_rate ?? 0.10; // 10% default
+    }
+
+    public static function getShippingCost()
+    {
+        return GeneralSetting::first()->shipping_cost ?? 0;
+    }
+
+    public static function calculateShipping($totalItems)
+    {
+        $gs = GeneralSetting::first();
+        $baseShipping = $gs->shipping_cost ?? 5.00;
+        
+        // Add $1 for each item after the first one, up to a maximum of $15 total shipping
+        $additionalShipping = min(($totalItems - 1) * 1.00, 10.00);
+        return $baseShipping + ($totalItems > 1 ? $additionalShipping : 0);
+    }
+
+    public static function getCountries()
+    {
+        return [
+            'US' => 'United States',
+            'CA' => 'Canada',
+            'MX' => 'Mexico',
+            'GB' => 'United Kingdom',
+            'DE' => 'Germany',
+            'FR' => 'France',
+            'IT' => 'Italy',
+            'ES' => 'Spain',
+            'AU' => 'Australia',
+            'NZ' => 'New Zealand',
+            'JP' => 'Japan',
+            'CN' => 'China',
+            'IN' => 'India',
+            'BR' => 'Brazil',
+            'AR' => 'Argentina',
+            'ZA' => 'South Africa',
+            'AE' => 'United Arab Emirates',
+            'SG' => 'Singapore',
+            'MY' => 'Malaysia',
+            'PH' => 'Philippines',
+            'TH' => 'Thailand',
+            'VN' => 'Vietnam',
+            'ID' => 'Indonesia',
+            'PK' => 'Pakistan',
+            'BD' => 'Bangladesh',
+            'RU' => 'Russia',
+            'UA' => 'Ukraine',
+            'TR' => 'Turkey',
+            'SA' => 'Saudi Arabia',
+            'EG' => 'Egypt',
+            'NG' => 'Nigeria',
+            'KE' => 'Kenya',
+            'ZA' => 'South Africa'
+        ];
     }
 
     

@@ -2,184 +2,115 @@
 
 namespace App\Http\Controllers\User;
 
-use App\CentralLogics\Cart;
-use App\CentralLogics\Helpers;
-use App\CentralLogics\OrderLogic;
-use App\CentralLogics\TransactionLogic;
-use App\Classes\GeniusMailer;
 use App\Http\Controllers\Controller;
-use App\Models\GeneralSetting;
-use App\Models\TemporaryOrder;
-use Auth;
+use App\Models\Order;
+use App\CentralLogics\{Helpers, CheckoutLogics};
+use PayPalCheckoutSdk\Core\PayPalHttpClient;
+use PayPalCheckoutSdk\Core\SandboxEnvironment;
+use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
+use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use Session;
-use Srmklive\PayPal\Services\PayPal as PayPalClient;
+
 class PaypalController extends Controller
-{   
-    public function __construct(Request $request)
+{
+    private $client;
+
+    public function __construct()
     {
-        $this->middleware('auth');
-        $this->request = $request;
+        $environment = new SandboxEnvironment(
+            config('services.paypal.client_id'),
+            config('services.paypal.secret')
+        );
+        $this->client = new PayPalHttpClient($environment);
     }
 
-    public function checkoutStore(Request $request)
-    {    
-     
-        //Remove temporary order by changing the status
-        TemporaryOrder::where('user_id',auth::user()->id)->where('status','pending')->update(['status'=>'override']);
-
-
-         $gs = GeneralSetting::findOrFail(1);
-         
-         $user=Auth::user();
-         $cartItems = Cart::getCartItems();
-         if(!$cartItems){
-           return redirect()->back()->with('error','Empty Cart');
-         }
-        $cartTotal = Cart::calculateCartTotal($cartItems,'paypal');
-        $totalprice = Helpers::getPrice($cartTotal['total']);
-        $coupon_code=Session::get('coupon_code');
-        $coupon_own_type=Session::get('coupon_own_type');
-        $couponPercentage = Session::get('coupon_percentage');
-
-        $partnerOrderNo='paypal' . time() . mt_rand(1000, 9999);
-        $authToken = hash('sha256', Str::random(32));
-
-
-        try{
-
-            $tempOrder=OrderLogic::createTemporaryOrder($user->id,$partnerOrderNo,$cartItems,$cartTotal,'pending','PayPal',$authToken,$coupon_code,$coupon_own_type,$couponPercentage);
-            \Log::info('PayPal payment initiation.', ['user_id' => $user->id, 'amount' => $totalprice]);
-
-            $provider = new PayPalClient();
-            $token = $provider->getAccessToken();
-            $provider->setAccessToken($token);  
-
-
-
-            $data = [
-                "intent" => "CAPTURE",
-                "application_context" => [
-                    "brand_name" => $gs->name,
-                    "locale" => "en-US",
-                    "payment_method" => [
-                        "payer_selected" => "PAYPAL",
-                        "payee_preferred" => "IMMEDIATE_PAYMENT_REQUIRED"
+    public function process(Order $order)
+    {
+        try {
+            $request = new OrdersCreateRequest();
+            $request->prefer('return=representation');
+            
+            $request->body = [
+                'intent' => 'CAPTURE',
+                'purchase_units' => [[
+                    'reference_id' => $order->order_number,
+                    'amount' => [
+                        'currency_code' => Helpers::getCurrency(),
+                        'value' => number_format($order->total, 2, '.', '')
                     ],
-                    "return_url" => route('user.paypal.checkout.success'),
-                    "cancel_url" => route('user.paypal.checkout.cancel')
-                ],
-                "purchase_units" => [
-                    [
-                        "amount" => [
-                            "currency_code" => $gs->currency_code,
-                            "value" => $totalprice
-                        ],
-                        "description" => "Purchase of Cart items by " . auth()->user()->name . " - " . auth()->user()->affiliate_code,
-                        'custom_id' => http_build_query([
-                            'user_id' => $user->id,
-                            'totalprice'=> $totalprice,
-                            'partnerOrderNo' => $tempOrder->partner_order_no,
-                            // 'authToken' => $tempOrder->auth_token
-                        ]),
-                    ]
+                    'description' => "Payment for order #{$order->order_number}"
+                ]],
+                'application_context' => [
+                    'return_url' => route('user.paypal.capture', ['order' => $order->order_number]),
+                    'cancel_url' => route('user.paypal.cancel', ['order' => $order->order_number])
                 ]
             ];
 
-            $order = $provider->createOrder($data);   
-            return redirect($order['links'][1]['href']);
+            $response = $this->client->execute($request);
 
-        } catch (\Exception $exception) {
-           \Log::error('Order/Transaction creation failed.', ['user_id' => $user->id, 'error' => $exception->getMessage()]);
-            return back()->with('error', $exception->getMessage());
+            return response()->json([
+                'success' => true,
+                'approval_url' => $this->getApprovalUrl($response->result->links)
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
-
     }
 
+    public function capture(Request $request, $orderNumber)
+    {
+        try {
+            $order = Order::where('order_number', $orderNumber)
+                         ->where('user_id', auth()->id())
+                         ->firstOrFail();
 
-    public function success(Request $request)
-    {   
+            $captureRequest = new OrdersCaptureRequest($request->token);
+            $response = $this->client->execute($captureRequest);
 
-        // Init PayPal
-        $provider = new PayPalClient();
-        $token = $provider->getAccessToken();
-        $provider->setAccessToken($token);
+            if ($response->result->status === 'COMPLETED') {
+                $order->payment_status = 'completed';
+                $order->status = 'processing';
+                $order->save();
 
-           try {
+                CheckoutLogics::updateProductStock($order);
 
-                // Handle the return logic here
-                \Log::info('Received Paypal Success Request:', [
-                    'request_data' => $request->all(),
-                    'auth_id' => auth()->user()->id
-                ]);
-
-                // Get PaymentOrder using our transaction ID
-                $orderResponse = $provider->capturePaymentOrder($request->token);
-                $txn_id = $orderResponse['purchase_units'][0]['payments']['captures'][0]['id'];
-
-                // Parse the custom data parameters
-                parse_str($orderResponse['purchase_units'][0]['payments']['captures'][0]['custom_id'] ?? null, $data);
-
-                if ($orderResponse['status'] && $orderResponse['status'] === "COMPLETED") {
-                    $payment_status='completed';
-                    if($data){
-                        $tempOrder=TemporaryOrder::where('partner_order_no',$data['partnerOrderNo'])->where('status','pending')->firstOrFail();
-
-                           // Decode the cart items and cart total, since they were stored as JSON
-                        $cartItems = json_decode($tempOrder->cart_items, true);
-                        $cartTotal = json_decode($tempOrder->cart_total, true);
-
-                        $cartTotal['total'] = $data['totalprice'];
-
-                        $createOrder = OrderLogic::createOrder(
-                            $tempOrder->user_id, 
-                            $cartItems, 
-                            $cartTotal, 
-                            $payment_status='completed', 
-                            $tempOrder->payment_method, 
-                            $tempOrder->coupon_code, 
-                            $tempOrder->coupon_own_type, 
-                            $tempOrder->coupon_percentage
-                        );
-
-                        $order= $createOrder; 
-                        $createtransaction=TransactionLogic::createTransaction($order->id,$order->user_id,$order->payment_gateway, $data['totalprice'],$order->checkout_fee,'checkout',$txn_id); 
-
-                        $tempOrder->status='completed';
-                        $tempOrder->payment_status='completed';
-                        $tempOrder->update(); 
-                        
-                        $mailer = new GeniusMailer();
-                        $mailer->sendOrderConfirmation($order);
-
-                        //clear cart
-                        Cart::clearCart();
-                        return redirect()->route('user.dashboard')->with('success', 'Your order has been successfully placed.');
-                    }else{
-                        // $tempOrder->status='failed';
-                        // $tempOrder->update(); 
-                        // Handle the return logic here
-                       \Log::info('Paypal Transaction Failed User '. auth()->user()->id);
-                        return redirect()->back()->with('error','Transaction verification failed.');
-                    }
-                    
-                 
-                }
-            }catch(\Exception $e){
-                
-                \Log::error('Paypal Transaction Failed for User ' . auth()->user()->id . '. Error: ' . $e->getMessage() );
-                return redirect()->route('user.checkout')->with('error', $e->getMessage());
+                return redirect()->route('front.checkout.complete', $order->order_number);
             }
 
+            throw new Exception('Payment not completed');
+
+        } catch (Exception $e) {
+            return redirect()->route('front.checkout.cancel', $order->order_number)
+                           ->with('error', $e->getMessage());
+        }
     }
 
-    public function cancelPaypal($value='')
+    public function cancel($orderNumber)
     {
-       return redirect()->route('user.checkout')->with('erorr',"Payment Cancelled");
+        $order = Order::where('order_number', $orderNumber)
+                     ->where('user_id', auth()->id())
+                     ->firstOrFail();
+
+        $order->payment_status = 'cancelled';
+        $order->status = 'cancelled';
+        $order->save();
+
+        return redirect()->route('front.checkout.cancel', $order->order_number)
+                       ->with('error', 'Payment was cancelled');
     }
 
-
-
+    private function getApprovalUrl($links)
+    {
+        foreach ($links as $link) {
+            if ($link->rel === 'approve') {
+                return $link->href;
+            }
+        }
+        throw new Exception('No approval URL found');
+    }
 }

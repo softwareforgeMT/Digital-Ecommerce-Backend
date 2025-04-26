@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Models\GeneralSetting;
 use App\Models\SocialSetting;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-
+use App\CentralLogics\CartLogics;
+use App\CentralLogics\Helpers;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,14 +33,12 @@ class AppServiceProvider extends ServiceProvider
         view()->composer('*', function($settings) {
             $settings->with('gs', GeneralSetting::find(1));
             $settings->with('sociallinks', SocialSetting::find(1));
-            
-            // Add latest 3 active products for navbar
-            $settings->with('navbarProducts', \App\Models\Product::active()
-                ->select('id', 'name', 'slug', 'image', 'detection_status')
-                ->latest()
-                ->take(3)
-                ->get()
-            );
+        });
+
+        // Share Cart and Helper classes with all views
+        View::composer('*', function ($view) {
+            $view->with('CartLogics', CartLogics::class);
+            $view->with('Helpers', Helpers::class);
         });
     }
 }

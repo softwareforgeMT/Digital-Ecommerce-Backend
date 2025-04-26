@@ -9,7 +9,14 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CourseGalleryController;
 use App\Http\Controllers\Admin\CourseModulesController;
-use App\Http\Controllers\Admin\ProductController;
+
+use App\Http\Controllers\Admin\Product\ProductCategoryController;
+use App\Http\Controllers\Admin\Product\ProductOptionTypesController;
+use App\Http\Controllers\Admin\Product\ProductController;
+use App\Http\Controllers\Admin\Nostalgia\NostalgiaCategoryController;
+use App\Http\Controllers\Admin\Nostalgia\NostalgiaItemController;
+use App\Http\Controllers\Admin\Services\ServiceCategoryController;
+use App\Http\Controllers\Admin\Services\ServiceItemController;
 
 use App\Http\Controllers\Admin\CoursesController;
 use App\Http\Controllers\Admin\JobApplicationController;
@@ -17,7 +24,8 @@ use App\Http\Controllers\Admin\JobListingController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PageController;
- use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+
 
 use App\Http\Controllers\Admin\QuizBankController;
 use App\Http\Controllers\Admin\QuizGroupController;
@@ -28,16 +36,24 @@ use App\Http\Controllers\Admin\TutorAppointmentController;
 use App\Http\Controllers\Admin\TutorController;
 use App\Http\Controllers\Admin\TutorScheduleController;
 
-
+use App\Http\Controllers\Admin\Blog\BlogCategoryController;
+use App\Http\Controllers\Admin\Blog\BlogController;
 
 use App\Http\Controllers\User\TicketController as UserTicketController;
-
+use App\Http\Controllers\Front\CartController;
+use App\Http\Controllers\Front\CheckoutController;
 use App\Http\Controllers\Vendor\Chatify\MessagesController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\User\SubscriptionCheckoutController;
+
+// BitLog Controllers
+use App\Http\Controllers\Admin\BitScheme\BitTaskController;
+use App\Http\Controllers\Admin\BitScheme\BitSubmissionController;
+use App\Http\Controllers\User\BitTaskController as UserBitTaskController;
+use App\Http\Controllers\User\BitWalletController;
 
 /*
 |--------------------------------------------------------------------------
@@ -172,6 +188,37 @@ Route::prefix('management0712')->group(function() {
 
   });
 
+
+  Route::group(['middleware' => 'permissions:product_category'], function () {
+    // Product Routes
+    Route::get('/product-categories/datatables', [ProductCategoryController::class, 'datatables'])->name('admin.product-categories.datatables');
+    Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('admin.product-categories.index');
+    Route::get('/product-categories/create', [ProductCategoryController::class, 'create'])->name('admin.product-categories.create');
+    Route::post('/product-categories/create', [ProductCategoryController::class, 'store'])->name('admin.product-categories.store');
+    Route::get('/product-categories/edit/{id}', [ProductCategoryController::class, 'edit'])->name('admin.product-categories.edit');
+    Route::post('//product//edit/{id}', [ProductCategoryController::class, 'update'])->name('admin.product-categories.update');
+    Route::get('/product-categories/delete/{id}', [ProductCategoryController::class, 'destroy'])->name('admin.product-categories.delete');
+    Route::get('/product-categories/status/{id1}/{id2}', [ProductCategoryController::class, 'status'])->name('admin.product-categories.status');
+  });
+
+
+  Route::group(['middleware' => 'permissions:option_types'], function () {
+      // Option Type Routes
+      Route::get('/option-types/datatables', [ProductOptionTypesController::class, 'datatables'])->name('admin.option-types.datatables');
+      Route::get('/option-types', [ProductOptionTypesController::class, 'index'])->name('admin.option-types.index');
+      Route::get('/option-types/create', [ProductOptionTypesController::class, 'create'])->name('admin.option-types.create');
+      Route::post('/option-types', [ProductOptionTypesController::class, 'store'])->name('admin.option-types.store');
+      Route::get('/option-types/edit/{id}', [ProductOptionTypesController::class, 'edit'])->name('admin.option-types.edit');
+      Route::post('/option-types/edit/{id}', [ProductOptionTypesController::class, 'update'])->name('admin.option-types.update');
+      Route::get('/option-types/delete/{id}', [ProductOptionTypesController::class, 'destroy'])->name('admin.option-types.delete');
+      
+      // Option Type Status Route
+      Route::get('/option-types/status/{id1}/{id2}', [ProductOptionTypesController::class, 'updateStatus'])->name('admin.option-types.status');
+  });
+
+
+
+
   Route::group(['middleware' => 'permissions:products'], function () {
     // Product Routes
     Route::get('/products/datatables', [ProductController::class, 'datatables'])->name('admin.product.datatables');
@@ -182,6 +229,7 @@ Route::prefix('management0712')->group(function() {
     Route::post('/product/edit/{id}', [ProductController::class, 'update'])->name('admin.product.update');
     Route::get('/product/delete/{id}', [ProductController::class, 'destroy'])->name('admin.product.delete');
     Route::get('/product/status/{id1}/{id2}', [ProductController::class, 'status'])->name('admin.product.status');
+    
   });
 
 
@@ -203,15 +251,11 @@ Route::prefix('management0712')->group(function() {
     //Order Routes
     Route::get('/orders/datatables',[OrderController::class, 'datatables'])->name('admin.orders.datatables');
     Route::get('/orders',[OrderController::class, 'index'])->name('admin.orders.index');
-    // Route::get('/orders/create', [OrderController::class, 'create'])->name('admin.orders.create');
-    // Route::post('/orders/create',[OrderController::class, 'store'])->name('admin.orders.store');
     Route::get('/orders/show/{id}',[OrderController::class, 'show'])->name('admin.orders.show');
-    Route::get('/orders/invoice/show/{id}',[OrderController::class, 'invoice'])->name('admin.orders.invoice.show');
-
-    Route::get('/orders/invoice/download/{id}',[OrderController::class, 'downloadInvoice'])->name('admin.orders.invoice.download');
-    // Route::post('/orders/edit/{id}', [OrderController::class, 'update'])->name('admin.orders.update');
-    // Route::get('/orders/delete/{id}',[OrderController::class, 'destroy'])->name('admin.orders.delete');
-    // Route::get('/orders/status/{id1}/{id2}',[OrderController::class, 'status'])->name('admin.orders.status');
+    Route::get('/orders/invoice/{id}',[OrderController::class, 'invoice'])->name('admin.orders.invoice');
+    Route::get('/orders/download-invoice/{id}',[OrderController::class, 'downloadInvoice'])->name('admin.orders.download-invoice');
+    Route::post('/orders/status/',[OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+    Route::get('/orders/delete/{id}',[OrderController::class, 'delete'])->name('admin.orders.delete');
   });  
 
   Route::group(['middleware'=>'permissions:coupon'],function(){
@@ -427,8 +471,138 @@ Route::prefix('management0712')->group(function() {
      // include __DIR__.'/chatify.php';      
   });
 
+  Route::group(['middleware' => 'permissions:nostalgia'], function () {
+    Route::prefix('nostalgia')->name('admin.nostalgia.')->group(function () {
+        // Category Routes
+        Route::get('/categories/datatables', [NostalgiaCategoryController::class, 'datatables'])->name('category.datatables');
+        Route::get('/categories', [NostalgiaCategoryController::class, 'index'])->name('category.index');
+        Route::get('/category/create', [NostalgiaCategoryController::class, 'create'])->name('category.create');
+        Route::post('/category/store', [NostalgiaCategoryController::class, 'store'])->name('category.store');
+        Route::get('/category/edit/{id}', [NostalgiaCategoryController::class, 'edit'])->name('category.edit');
+        Route::post('/category/update/{id}', [NostalgiaCategoryController::class, 'update'])->name('category.update');
+        Route::get('/category/delete/{id}', [NostalgiaCategoryController::class, 'destroy'])->name('category.delete');
+        Route::get('/category/status/{id1}/{id2}', [NostalgiaCategoryController::class, 'status'])->name('category.status');
+        Route::get('/category/parents', [NostalgiaCategoryController::class, 'getParentCategories'])->name('category.parents');
+
+        // Item Routes
+        Route::get('/items/datatables', [NostalgiaItemController::class, 'datatables'])->name('item.datatables');
+        Route::get('/items', [NostalgiaItemController::class, 'index'])->name('item.index');
+        Route::get('/item/create', [NostalgiaItemController::class, 'create'])->name('item.create');
+        Route::post('/item/store', [NostalgiaItemController::class, 'store'])->name('item.store');
+        Route::get('/item/edit/{id}', [NostalgiaItemController::class, 'edit'])->name('item.edit');
+        Route::post('/item/update/{id}', [NostalgiaItemController::class, 'update'])->name('item.update');
+        Route::get('/item/delete/{id}', [NostalgiaItemController::class, 'destroy'])->name('item.delete');
+        Route::get('/item/status/{id1}/{id2}', [NostalgiaItemController::class, 'status'])->name('item.status');
+        Route::get('/get-subcategories/{category_id}', [NostalgiaItemController::class, 'getSubcategories'])->name('item.subcategories');
+        Route::get('/get-childcategories/{subcategory_id}', [NostalgiaItemController::class, 'getChildcategories'])->name('item.childcategories');
+    });
+  });
+
+  Route::group(['middleware' => 'permissions:services'], function () {
+    // Service Category Routes
+    Route::prefix('service')->name('admin.service.')->group(function () {
+        // Category Routes
+        Route::get('/categories/datatables', [ServiceCategoryController::class, 'datatables'])->name('category.datatables');
+        Route::get('/categories', [ServiceCategoryController::class, 'index'])->name('category.index');
+        Route::get('/category/create', [ServiceCategoryController::class, 'create'])->name('category.create');
+        Route::post('/category/store', [ServiceCategoryController::class, 'store'])->name('category.store');
+        Route::get('/category/edit/{id}', [ServiceCategoryController::class, 'edit'])->name('category.edit');
+        Route::post('/category/update/{id}', [ServiceCategoryController::class, 'update'])->name('category.update');
+        Route::get('/category/delete/{id}', [ServiceCategoryController::class, 'destroy'])->name('category.delete');
+        Route::get('/category/status/{id1}/{id2}', [ServiceCategoryController::class, 'status'])->name('category.status');
+
+        // Service Item Routes
+        Route::get('/items/datatables', [ServiceItemController::class, 'datatables'])->name('item.datatables');
+        Route::get('/items', [ServiceItemController::class, 'index'])->name('item.index');
+        Route::get('/item/create', [ServiceItemController::class, 'create'])->name('item.create');
+        Route::post('/item/store', [ServiceItemController::class, 'store'])->name('item.store');
+        Route::get('/item/edit/{id}', [ServiceItemController::class, 'edit'])->name('item.edit');
+        Route::post('/item/update/{id}', [ServiceItemController::class, 'update'])->name('item.update');
+        Route::get('/item/delete/{id}', [ServiceItemController::class, 'destroy'])->name('item.delete');
+        Route::get('/item/status/{id1}/{id2}', [ServiceItemController::class, 'status'])->name('item.status');
+    });
+  });
+
+  Route::group(['middleware' => 'permissions:blog'], function () {
+    Route::prefix('blog')->name('admin.blog.')->group(function () {
+        // Blog Category Routes
+        Route::get('/categories/datatables', [BlogCategoryController::class, 'datatables'])->name('category.datatables');
+        Route::get('/categories', [BlogCategoryController::class, 'index'])->name('category.index');
+        Route::get('/category/create', [BlogCategoryController::class, 'create'])->name('category.create');
+        Route::post('/category/store', [BlogCategoryController::class, 'store'])->name('category.store');
+        Route::get('/category/edit/{id}', [BlogCategoryController::class, 'edit'])->name('category.edit');
+        Route::post('/category/update/{id}', [BlogCategoryController::class, 'update'])->name('category.update');
+        Route::get('/category/delete/{id}', [BlogCategoryController::class, 'destroy'])->name('category.delete');
+        Route::get('/category/status/{id1}/{id2}', [BlogCategoryController::class, 'status'])->name('category.status');
+
+        // Blog Post Routes
+        Route::get('/posts/datatables', [BlogController::class, 'datatables'])->name('datatables');
+        Route::get('/posts', [BlogController::class, 'index'])->name('index');
+        Route::get('/post/create', [BlogController::class, 'create'])->name('create');
+        Route::post('/post/store', [BlogController::class, 'store'])->name('store');
+        Route::get('/post/edit/{id}', [BlogController::class, 'edit'])->name('edit');
+        Route::post('/post/update/{id}', [BlogController::class, 'update'])->name('update');
+        Route::get('/post/delete/{id}', [BlogController::class, 'destroy'])->name('delete');
+        Route::get('/post/status/{id1}/{id2}', [BlogController::class, 'status'])->name('status');
+    });
+  });
+
+
+  Route::group(['middleware' => 'permissions:bit_logs'], function () {
+      Route::name('admin.')->group(function () {
+      // Admin BitLog Routes
+        Route::get('/bit-tasks/datatables', [BitTaskController::class, 'datatables'])->name('bit-tasks.datatables');
+        Route::get('/bit-tasks', [BitTaskController::class, 'index'])->name('bit-tasks.index');
+        Route::get('/bit-tasks/create', [BitTaskController::class, 'create'])->name('bit-tasks.create');
+        Route::post('/bit-tasks/store', [BitTaskController::class, 'store'])->name('bit-tasks.store');
+        Route::get('/bit-tasks/edit/{id}', [BitTaskController::class, 'edit'])->name('bit-tasks.edit');
+        Route::post('/bit-tasks/update/{id}', [BitTaskController::class, 'update'])->name('bit-tasks.update');
+        Route::get('/bit-tasks/delete/{id}', [BitTaskController::class, 'destroy'])->name('bit-tasks.delete');
+        Route::get('/bit-tasks/status/{id}/{status}', [BitTaskController::class, 'status'])->name('bit-tasks.status');
+
+        // Bit Submissions
+        Route::get('/bit-submissions/datatables', [BitSubmissionController::class, 'datatables'])->name('bit-submissions.datatables');
+        Route::get('/bit-submissions', [BitSubmissionController::class, 'index'])->name('bit-submissions.index');
+        Route::get('/bit-submissions/pending', [BitSubmissionController::class, 'pending'])->name('bit-submissions.pending');
+        Route::get('/bit-submissions/{id}', [BitSubmissionController::class, 'show'])->name('bit-submissions.show');
+        Route::post('/bit-submissions/review/{id}', [BitSubmissionController::class, 'review'])->name('bit-submissions.review');
+    });
+  });
+
+  // Add the Bit Management System Routes
+  Route::group(['middleware'=>'permissions:bit_management'],function(){
+      // Bit Tasks Admin Routes
+      Route::get('/bit-tasks/datatables',[BitTaskController::class, 'datatables'])->name('admin.bit-tasks.datatables');
+      Route::get('/bit-tasks',[BitTaskController::class, 'index'])->name('admin.bit-tasks.index');
+      Route::get('/bit-tasks/create',[BitTaskController::class, 'create'])->name('admin.bit-tasks.create');
+      Route::post('/bit-tasks/create',[BitTaskController::class, 'store'])->name('admin.bit-tasks.store');
+      Route::get('/bit-tasks/edit/{id}',[BitTaskController::class, 'edit'])->name('admin.bit-tasks.edit');
+      Route::post('/bit-tasks/edit/{id}',[BitTaskController::class, 'update'])->name('admin.bit-tasks.update');
+      Route::get('/bit-tasks/delete/{id}',[BitTaskController::class, 'destroy'])->name('admin.bit-tasks.delete');
+      Route::get('/bit-tasks/status/{id}/{status}',[BitTaskController::class, 'status'])->name('admin.bit-tasks.status');
+      
+      // Bit Submissions Admin Routes
+      Route::get('/bit-submissions/datatables',[BitSubmissionController::class, 'datatables'])->name('admin.bit-submissions.datatables');
+      Route::get('/bit-submissions',[BitSubmissionController::class, 'index'])->name('admin.bit-submissions.index');
+      Route::get('/bit-submissions/pending',[BitSubmissionController::class, 'pending'])->name('admin.bit-submissions.pending');
+      Route::get('/bit-submissions/show/{id}',[BitSubmissionController::class, 'show'])->name('admin.bit-submissions.show');
+      Route::post('/bit-submissions/review/{id}',[BitSubmissionController::class, 'review'])->name('admin.bit-submissions.review');
+  });
+
+  // Reviews management
+  Route::group(['prefix' => 'reviews', 'as' => 'admin.reviews.'], function () {
+      Route::get('/', [App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('index');
+      Route::get('/datatables', [App\Http\Controllers\Admin\ReviewController::class, 'datatables'])->name('datatables');
+      Route::get('/{id}/edit', [App\Http\Controllers\Admin\ReviewController::class, 'edit'])->name('edit');
+      Route::post('/{id}/update', [App\Http\Controllers\Admin\ReviewController::class, 'update'])->name('update');
+      Route::get('/{id}/delete', [App\Http\Controllers\Admin\ReviewController::class, 'delete'])->name('delete');
+      Route::post('/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('bulk-approve');
+      Route::post('/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('bulk-reject');
+  });
 
 });
+
+
 
 
 
@@ -461,89 +635,62 @@ Route::group(['middleware' => 'guest'], function() {
 });//<--- End Group guest
 
 
-Route::group(['prefix' => 'user'], function() {
+
+
+
+Route::group(['prefix' => 'user', 'middleware' => ['auth'] ], function() {
     Route::get('/dashboard', [App\Http\Controllers\User\DashboardController::class, 'index'])->name('user.dashboard');
 
 
  
-
-
-
-
-    //   Route::get('/customer/support', [App\Http\Controllers\User\DashboardController::class, 'customerSupport'])->name('user.customer.support');
-
-    //  Route::post('/save-tour-completion', [App\Http\Controllers\User\DashboardController::class, 'saveTourCompletion'])->name('user.saveTourCompletion');
-    
-    // Route::get('/orders', [App\Http\Controllers\User\OrderController::class, 'index'])->name('user.orders');
-
-
-
-    // User Password Reset
-    Route::post('/reset',[App\Http\Controllers\User\DashboardController::class, 'reset'])->name('user.reset.submit');
+   
     // User Profile
     Route::get('/profile',[App\Http\Controllers\User\DashboardController::class, 'profile'] )->name('user.profile');
-    // Route::get('/load-more-documents',[App\Http\Controllers\User\DashboardController::class, 'loadMore'] )->name('user.load-more-documents');
-
-
 
     Route::get('/account-settings',[App\Http\Controllers\User\DashboardController::class, 'accountSettings'] )->name('user.account-settings');
-    Route::post('/account-settings', [App\Http\Controllers\User\DashboardController::class, 'accountSettingsUpdate'])->name('user.account-settings.update');
+    Route::post('/account-settings/update', [App\Http\Controllers\User\DashboardController::class, 'accountSettingsUpdate'])->name('user.account-settings.update');
+    
+    Route::get('/change-password', [App\Http\Controllers\User\DashboardController::class, 'changePassword'])->name('user.change-password');
+    Route::post('/change-password/update', [App\Http\Controllers\User\DashboardController::class, 'changePasswordUpdate'])->name('user.change-password.update');
 
-    // Route::get('/pick-interests/{step2?}', [App\Http\Controllers\User\DashboardController::class, 'pickInterests'])->name('front.pick-interests')->withoutMiddleware(['UserAuthenticated']);
-    // Route::post('/pick-interests/store', [App\Http\Controllers\User\DashboardController::class, 'pickInterestStore'])->name('front.pick-interests.step2.submit')->withoutMiddleware(['UserAuthenticated']);
-
-    // Route::get('/earnings/datatables',[App\Http\Controllers\User\EarningController::class, 'datatables'])->name('user.earnings.datatables');
-    // Route::get('/earnings',[App\Http\Controllers\User\EarningController::class, 'index'])->name('user.earnings');
-
-      // Add Stripe Payouts Gateway
-    // Route::get('/add/payment/gateway',[App\Http\Controllers\User\EarningController::class, 'addPayGateway'])->name('user.addpayment.gateway');
-    // Route::get('/return/payment/gateway/status',[App\Http\Controllers\User\EarningController::class, 'returnConnectStatus'])->name('user.returnpayment.gateway.status');
-    // Route::get('/send/payment/user',[App\Http\Controllers\User\EarningController::class, 'sendPayUser'])->name('user.sendpayment');
-
-    // Route::get('/pricing', [App\Http\Controllers\User\DashboardController::class, 'pricing'])->name('user.pricing');
    
 
-         Route::get('/tickets', [UserTicketController::class, 'index'])->name('user.tickets.index');
+
+    // User Order Routes
+    Route::get('/orders', [App\Http\Controllers\User\OrderController::class, 'index'])->name('user.orders.index');
+    Route::get('/orders/{orderNumber}', [App\Http\Controllers\User\OrderController::class, 'show'])->name('user.orders.show');
+
+    // Bit Tasks User Routes
+    Route::get('/bit-tasks', [App\Http\Controllers\User\BitTaskController::class, 'index'])->name('user.bit-tasks.index');
+    Route::get('/bit-tasks/{task}', [App\Http\Controllers\User\BitTaskController::class, 'show'])->name('user.bit-tasks.show');
+    Route::post('/bit-tasks/{task}/submit', [App\Http\Controllers\User\BitTaskController::class, 'submit'])->name('user.bit-tasks.submit');
+    Route::get('/bit-tasks-history', [App\Http\Controllers\User\BitTaskController::class, 'history'])->name('user.bit-tasks.history');
+    
+    // Bit Wallet User Routes
+    Route::get('/bit-wallet', [App\Http\Controllers\User\BitWalletController::class, 'index'])->name('user.bit-wallet.index');
+
+   
+
+      Route::get('/tickets', [UserTicketController::class, 'index'])->name('user.tickets.index');
       Route::get('/tickets/create', [UserTicketController::class, 'create'])->name('user.tickets.create');
       Route::post('/tickets', [UserTicketController::class, 'store'])->name('user.tickets.store');
       Route::get('/tickets/{id}', [UserTicketController::class, 'show'])->name('user.tickets.show');
       Route::post('/tickets/{id}/reply', [UserTicketController::class, 'reply'])->name('user.tickets.reply');
 
+      // Reviews
+      Route::group(['prefix' => 'reviews', 'as' => 'user.reviews.'], function () {
+          Route::get('/', [App\Http\Controllers\User\ReviewController::class, 'index'])->name('index');
+          Route::post('/store', [App\Http\Controllers\User\ReviewController::class, 'store'])->name('store');
+          Route::get('/edit/{id}', [App\Http\Controllers\User\ReviewController::class, 'edit'])->name('edit');
+          Route::post('/update/{id}', [App\Http\Controllers\User\ReviewController::class, 'update'])->name('update');
+          Route::get('/delete/{id}', [App\Http\Controllers\User\ReviewController::class, 'delete'])->name('delete');
+      });
+
    
-  // Cart & checkout Section
-  // Route::get('/cart', [App\Http\Controllers\User\CartController::class, 'index'])->name('user.cart.index');
-  Route::post('/cart/add', [App\Http\Controllers\User\CartController::class, 'addItem'])->name('user.cart.addItem');
-  Route::post('/cart/remove', [App\Http\Controllers\User\CartController::class, 'removeItem'])->name('user.cart.removeItem');
-  Route::post('/cart/clear', [App\Http\Controllers\User\CartController::class, 'clearCart'])->name('user.cart.clearCart');
-
-  Route::post('/add/coupon', [App\Http\Controllers\User\CartController::class, 'addCoupon'])->name('user.cart.addCoupon');
-
-  Route::post('/paymentgateway/changed', [App\Http\Controllers\User\CartController::class, 'changePaymentGateway'])->name('user.paymentgateway.changed');
-
-  Route::get('/cart', [App\Http\Controllers\User\CheckoutController::class, 'checkout'])->name('user.cart');
-  Route::get('/checkout', [App\Http\Controllers\User\CheckoutController::class, 'checkout'])->name('user.checkout');
-  Route::post('/checkout/store', [App\Http\Controllers\User\CheckoutController::class, 'checkoutStore'])->name('user.checkout.store'); 
-
-  Route::post('/stripe/checkout/store', [App\Http\Controllers\User\StripeController::class, 'checkoutStore'])->name('user.stripe.checkout.store');
-
-  Route::get('/stripe/checkout/success', [App\Http\Controllers\User\StripeController::class, 'success'])->name('user.stripe.checkout.success');
-  Route::get('/stripe/checkout/cancel', [App\Http\Controllers\User\StripeController::class, 'cancel'])->name('user.stripe.checkout.cancel');
-
-  Route::post('/paypal/checkout/store', [App\Http\Controllers\User\PaypalController::class, 'checkoutStore'])->name('user.paypal.checkout.store');
-
-  Route::get('/paypal/checkout/success', [App\Http\Controllers\User\PaypalController::class, 'success'])->name('user.paypal.checkout.success');
-  Route::get('/paypal/checkout/cancel', [App\Http\Controllers\User\PaypalController::class, 'cancel'])->name('user.paypal.checkout.cancel');
-
-
-  Route::post('/user/alipay/checkout/store', [App\Http\Controllers\User\AliPayController::class, 'checkoutStore'])->name('user.alipay.checkout.store');
-  
-    Route::get('/forum', [App\Http\Controllers\User\ForumController::class, 'forum'])->name('user.forum');
-
-    Route::get('/gamebased', [App\Http\Controllers\User\ForumController::class, 'gameBased'])->name('user.gamebased');
-
     //Favorite Controller
     Route::post('/favorite/{type}/{id}', [App\Http\Controllers\User\FavoriteController::class, 'favorite']) ->withoutMiddleware(['UserAuthenticated']);;
     Route::post('/unfavorite/{type}/{id}', [App\Http\Controllers\User\FavoriteController::class, 'unfavorite'])->withoutMiddleware(['UserAuthenticated']);
+
 
 
     // LiveChat Routes
@@ -555,7 +702,9 @@ Route::group(['prefix' => 'user'], function() {
        // include __DIR__.'/chatify.php';      
     });
 
+    
 
+    
 
 });
 
@@ -564,15 +713,73 @@ Route::group(['prefix' => 'user'], function() {
 
 Route::get('/', [App\Http\Controllers\Front\HomeController::class, 'index'])->name('front.index');
 
+
+Route::get('/subcategories/{categoryId}', [App\Http\Controllers\Front\HomeController::class, 'getSubcategories'])->name('front.getSubcategories');
+
 Route::post('/error/report', [App\Http\Controllers\Front\ErrorReportController::class, 'store'])->name('error.report');
 Route::post('dropzone/media',  [App\Http\Controllers\Front\HomeController::class, 'dropzoneStoreMedia'])->name('dropzone.storeMedia');
 
 
-Route::get('/products', [App\Http\Controllers\Front\ProductController::class, 'index'])->name('front.products.index');
-Route::get('/product/{slug}', [App\Http\Controllers\Front\ProductController::class, 'show'])->name('front.product.details');
+// Product Routes
+Route::group(['prefix' => 'products'], function() {
+    Route::get('/', [App\Http\Controllers\Front\ProductController::class, 'index'])->name('front.products.index');
+    Route::get('/{slug}', [App\Http\Controllers\Front\ProductController::class, 'show'])->name('front.products.show');
+    Route::post('/get-variant-price', [App\Http\Controllers\Front\ProductController::class, 'getVariantPrice'])->name('front.products.variant-price');
+});
+
+// Service Routes
+Route::get('/services', [App\Http\Controllers\Front\ServiceController::class, 'index'])->name('front.services.index');
+Route::get('/service/{slug}', [App\Http\Controllers\Front\ServiceController::class, 'show'])->name('front.services.show');
+
+// Blog Routes
+Route::get('/blog', [App\Http\Controllers\Front\BlogController::class, 'index'])->name('front.blog.index');
+Route::get('/blog/{slug}', [App\Http\Controllers\Front\BlogController::class, 'show'])->name('front.blog.show');
+
+// Nostalgia Routes
+Route::get('/nostalgia', [App\Http\Controllers\Front\NostalgiaController::class, 'index'])->name('front.nostalgia.index');
+Route::get('/nostalgia/{slug}', [App\Http\Controllers\Front\NostalgiaController::class, 'show'])->name('front.nostalgia.show');
+Route::get('/nostalgia/categories/{category}/subcategories', [App\Http\Controllers\Front\NostalgiaController::class, 'getSubcategories'])->name('front.nostalgia.subcategories');
+Route::get('/nostalgia/subcategories/{subcategory}/children', [App\Http\Controllers\Front\NostalgiaController::class, 'getChildcategories'])->name('front.nostalgia.childcategories');
+
+// Cart Routes
+Route::group(['prefix' => 'cart', 'as' => 'front.cart.'], function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::post('/add', [CartController::class, 'add'])->name('add');
+    Route::post('/update/{item}', [CartController::class, 'update'])->name('update');
+    Route::delete('/remove/{item}', [CartController::class, 'remove'])->name('remove');
+    Route::post('/clear', [CartController::class, 'clear'])->name('clear');
+});
+
+// Order Routes
+// Route::group(['prefix' => 'orders', 'as' => 'front.orders.', 'middleware' => 'auth'], function () {
+//     Route::get('/', [App\Http\Controllers\Front\OrderController::class, 'index'])->name('index');
+//     Route::get('/{order:order_number}', [App\Http\Controllers\Front\OrderController::class, 'show'])->name('show');
+//     Route::get('/success/{order:order_number}', [App\Http\Controllers\Front\OrderController::class, 'success'])->name('success');
+//     Route::get('/cancel/{order:order_number}', [App\Http\Controllers\Front\OrderController::class, 'cancel'])->name('cancel');
+// });
+
+// Checkout Routes
+Route::group(['prefix' => 'checkout', 'as' => 'front.checkout.'], function () {
+    Route::get('/', [App\Http\Controllers\Front\CheckoutController::class, 'index'])->name('index');
+    Route::post('/process', [App\Http\Controllers\Front\CheckoutController::class, 'process'])->name('process');
+    // Route::get('/success/{orderNumber}', [App\Http\Controllers\Front\CheckoutController::class, 'success'])->name('success');
+    Route::get('/cancel/{orderNumber}', [App\Http\Controllers\Front\CheckoutController::class, 'cancel'])->name('cancel');
+});
+
+
+// Payment Routes
+Route::prefix('payment')->name('front.payment.')->middleware('auth')->group(function () {
+
+  Route::get('/stripe/success/{orderNumber}', [App\Http\Controllers\Front\StripeController::class, 'callback'])->name('stripe.success');
+  Route::get('/paypal/success/{orderNumber}', [App\Http\Controllers\Front\PaypalController::class, 'callback'])->name('paypal.success');
+    
+});
+
 // Auth::routes();
 //Language Translation
 Route::get('index/{locale}', [App\Http\Controllers\HomeController::class, 'lang']);
+
+
 
 // Route::get('/', [App\Http\Controllers\HomeController::class, 'root'])->name('root');
 

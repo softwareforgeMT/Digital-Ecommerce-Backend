@@ -2,215 +2,262 @@
 
 namespace App\CentralLogics;
 
-use App\Models\Coupon;
-use App\Models\SubPlan;
-use App\Models\GeneralSetting;
-use Auth;
-use Session;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Product;
+use Illuminate\Support\Facades\Session;
 
-class Cart
+class CartLogics 
 {
-    /**
-     * Add an item (subscription plan) to the cart.
-     */
-    public static function addCartItem(array $cartData)
+    public static function getOrCreateCart()
     {
-        $cartItems = Session::get('cart', []);
-        $key = self::generateCartItemKey($cartData['item_type'], $cartData['item_id']);
+        $sessionId = Session::getId();
+        $userId = auth()->id();
 
-        // // Only one subscription plan allowed in the cart.
-        // foreach ($cartItems as $item) {
-        //     if ($cartData['item_type'] === 'subscription_plan' && $item['item_type'] === 'subscription_plan') {
-        //         return ['success' => false, 'message' => 'Subscription plan already in cart'];
-        //     }
-        // }
+        $cart = Cart::where(function($query) use ($sessionId, $userId) {
+            $query->where('session_id', $sessionId)
+                  ->orWhere('user_id', $userId);
+        })->first();
 
-        // if (isset($cartItems[$key])) {
-        //     return ['success' => false, 'message' => 'Item already in cart'];
-        // }
-
-        $cartItems[$key] = [
-            'item_type' => $cartData['item_type'],
-            'item_id'   => $cartData['item_id'],
-            'quantity'  => 1,
-        ];
-
-        Session::put('cart', $cartItems);
-        return ['success' => true, 'message' => 'Item added successfully'];
-    }
-
-    /**
-     * Remove an item from the cart.
-     */
-    public static function removeCartItem(string $itemType, int $itemId)
-    {
-        $cartItems = Session::get('cart', []);
-        $key = self::generateCartItemKey($itemType, $itemId);
-        if (isset($cartItems[$key])) {
-            unset($cartItems[$key]);
-            if (empty($cartItems)) {
-                self::clearCart();
-            } else {
-                Session::put('cart', $cartItems);
-            }
-            return ['success' => true, 'message' => 'Item removed'];
-        } else {
-            return ['success' => false, 'message' => 'Item not found in cart'];
+        if (!$cart) {
+            $cart = Cart::create([
+                'session_id' => $sessionId,
+                'user_id' => $userId,
+                'currency' => Helpers::getCurrency()
+            ]);
         }
+
+        return $cart;
     }
 
-    /**
-     * Retrieve all items in the cart.
-     */
-    public static function getCartItems()
+    public static function calculateItemPrice($product, $options = null)
     {
-        return Session::get('cart');
-    }
-
-    /**
-     * Clear the cart and remove any coupon data.
-     */
-    public static function clearCart()
-    {
-        Session::forget('cart');
-        self::removeCoupon();
-    }
-
-    /**
-     * Remove coupon data from the session.
-     */
-    public static function removeCoupon()
-    {
-        Session::forget('coupon_code');
-        Session::forget('coupon_percentage');
-    }
-
-    /**
-     * Generate a unique key for a cart item.
-     */
-    public static function generateCartItemKey(string $itemType, int $itemId)
-    {
-        return $itemType . ':' . $itemId;
-    }
-
-    /**
-     * Validate a subscription plan.
-     */
-    public static function validateItem(string $itemType, int $itemId)
-    {
-        if ($itemType === 'subscription_plan') {
-            return SubPlan::where('id', $itemId)->active()->first();
-        }
-        return null;
-    }
-
-    /**
-     * Get details for a subscription plan.
-     */
-    public static function getItemDetails(string $itemType, int $itemId)
-    {
-        if ($itemType === 'subscription_plan') {
-            $item = SubPlan::where('id', $itemId)->active()->first();
-            if ($item) {
-                return [
-                    'name'    => $item->name,
-                    'details' => $item->details,
-                    'price'   => $item->price,
-                    'photo'   => isset($item->photo)
-                        ? Helpers::image($item->photo, 'subplan/')
-                        : Helpers::image('def.png', 'images/'),
-                ];
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Add a coupon to the session.
-     */
-    public static function addCoupon($coupon_code)
-    {  
-        $coupon_code = strtoupper($coupon_code);
-        $gs = \App\Models\GeneralSetting::find(1);
-        $user = Auth::user();
-        $couponExists = Coupon::active()->where('coupon_code', $coupon_code)->first();
-
-        // Disallow coupon for Basic Membership (id==1)
-        $cartItems = Session::get('cart', []);
-        foreach ($cartItems as $item) {
-            if ($item['item_type'] === 'subscription_plan' && $item['item_id'] == 1) {
-                self::removeCoupon();
-                return ['status' => 'error', 'message' => "Coupon can't be applied to Basic Membership."];
-            }
-        }
+        $basePrice = $product->discount_price ?? $product->price;
         
-        if ($couponExists) {
-            $couponPercentage = $couponExists->discount;
-            $today = date('Y-m-d');
-            if ($couponExists->max_coupon_usage > 0 && $couponExists->usage_count >= $couponExists->max_coupon_usage) {
-                self::removeCoupon();
-                return ['status' => 'error', 'message' => 'Coupon maximum usage limit exceeded.'];
-            }
-            if (!empty($couponExists->start_date) && $today < $couponExists->start_date) {
-                self::removeCoupon();
-                return ['status' => 'error', 'message' => 'Coupon is not valid at the moment.'];
-            }
-            if (!empty($couponExists->end_date) && $today > $couponExists->end_date) {
-                self::removeCoupon();
-                return ['status' => 'error', 'message' => 'Coupon has expired.'];
-            }
-            Session::put('coupon_code', $coupon_code);
-            Session::put('coupon_percentage', $couponPercentage);
-            return ['status' => 'success', 'message' => 'Coupon applied successfully.'];
-        } else {
-            self::removeCoupon();
-            return ['status' => 'error', 'message' => 'Coupon does not exist.'];
+        if (!$options || !$product->variations) {
+            return $basePrice;
         }
+
+        $variations = json_decode($product->variations, true);
+        $additionalPrice = 0;
+
+        foreach ($variations as $variation) {
+            if (isset($options[$variation['option_type_id']])) {
+                foreach ($variation['values'] as $value) {
+                    if ($value['value'] == $options[$variation['option_type_id']]) {
+                        $additionalPrice += floatval($value['additional_price']);
+                    }
+                }
+            }
+        }
+
+        return $basePrice + $additionalPrice;
     }
 
-    /**
-     * Combined function to calculate the cart total.
-     *
-     * It computes:
-     * - Subtotal from cart items.
-     * - Coupon discount.
-     * - Checkout fee (tax).
-     * Returns a breakdown array.
-     */
-    public static function calculateCartTotal($cartItems, $payment_method = 'stripe')
+    public static function calculateCartTotals($cart)
     {
         $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $itemDetails = self::getItemDetails($item['item_type'], $item['item_id']);
-            $price = $itemDetails['price'];
-            $subtotal += $price * $item['quantity'];
+        foreach ($cart->items as $item) {
+            $subtotal += $item->price * $item->quantity;
         }
-        $couponCode = Session::get('coupon_code');
-        $couponPercentage = Session::get('coupon_percentage') ?? 0;
-        $discount = ($couponCode && $couponPercentage > 0) ? $subtotal * ($couponPercentage / 100) : 0;
-        $tax = self::calculateCheckoutFee($subtotal, $payment_method);
-        $total = $subtotal + $tax - $discount;
+
+        $tax = $subtotal * Helpers::getTaxRate();
+        $total = $subtotal + $tax - $cart->discount;
+
         return [
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'tax'      => $tax,
-            'total'    => $total,
+            'subtotal' => round($subtotal, 2),
+            'tax' => round($tax, 2),
+            'total' => round($total, 2),
         ];
     }
 
-    /**
-     * Calculate the checkout fee based on the payment method.
-     */
-    public static function calculateCheckoutFee($price, $method = 'stripe')
+    public static function mergeCarts($sessionCart, $userCart)
     {
-        if ($method === 'paypal') {
-            $flat_fee = 0.39;
-            $percentage_fee = 3.49;
-        } else {
-            $flat_fee = 0.30;
-            $percentage_fee = 2.9;
+        if (!$sessionCart || !$userCart) {
+            return $userCart ?? $sessionCart;
         }
-        $fee = ($price * ($percentage_fee / 100)) + $flat_fee;
-        return Helpers::getPrice($fee, 1);
+
+        // Move items from session cart to user cart
+        foreach ($sessionCart->items as $item) {
+            $existingItem = $userCart->items()
+                ->where('product_id', $item->product_id)
+                ->where('options', $item->options)
+                ->first();
+
+            if ($existingItem) {
+                $existingItem->update([
+                    'quantity' => $existingItem->quantity + $item->quantity
+                ]);
+            } else {
+                $item->cart_id = $userCart->id;
+                $item->save();
+            }
+        }
+
+        // Delete the session cart
+        $sessionCart->delete();
+
+        // Recalculate totals
+        $totals = self::calculateCartTotals($userCart);
+        $userCart->update($totals);
+
+        return $userCart;
+    }
+
+    public static function addItem($product, $quantity = 1, $options = null)
+    {
+        $cart = self::getOrCreateCart();
+        
+        // Validate stock
+        if ($product->quantity < $quantity) {
+            return [
+                'success' => false,
+                'message' => 'Not enough stock available'
+            ];
+        }
+
+        // Calculate price with options
+        $price = self::calculateItemPrice($product, $options);
+
+        // Check for existing item
+        $existingItem = $cart->items()
+            ->where('product_id', $product->id)
+            ->where('options', json_encode($options))
+            ->first();
+
+        if ($existingItem) {
+            // Update quantity if exists
+            $newQuantity = $existingItem->quantity + $quantity;
+            if ($product->quantity < $newQuantity) {
+                return [
+                    'success' => false,
+                    'message' => 'Cannot add more of this item (stock limit)'
+                ];
+            }
+            $existingItem->update(['quantity' => $newQuantity]);
+        } else {
+            // Create new item
+            $cart->items()->create([
+                'product_id' => $product->id,
+                'quantity' => $quantity,
+                'price' => $price,
+                'options' => $options
+            ]);
+        }
+
+        // Recalculate cart totals
+        self::updateCartTotals($cart);
+
+        return [
+            'success' => true,
+            'message' => 'Item added to cart',
+            'cart' => $cart
+        ];
+    }
+
+    public static function updateCartTotals($cart)
+    {
+        $subtotal = 0;
+        $totalItems = 0;
+
+        foreach ($cart->items as $item) {
+            $subtotal += $item->price * $item->quantity;
+            $totalItems += $item->quantity;
+        }
+
+        $tax = $subtotal * Helpers::getTaxRate();
+        $shipping = Helpers::calculateShipping($totalItems);
+        
+        // Apply coupon if exists
+        $discount = 0;
+        if ($cart->coupon_code) {
+            $couponValidation = Checkout::validateCoupon($cart->coupon_code);
+            if ($couponValidation['valid']) {
+                $discount = ($subtotal * $couponValidation['discount']) / 100;
+            }
+        }
+
+        $total = $subtotal + $tax + $shipping - $discount;
+
+        $cart->update([
+            'subtotal' => round($subtotal, 2),
+            'tax' => round($tax, 2),
+            'shipping' => round($shipping, 2),
+            'discount' => round($discount, 2),
+            'total' => round($total, 2),
+            'total_items' => $totalItems
+        ]);
+
+        return $cart;
+    }
+
+    public static function validateStock($cart)
+    {
+        try {
+            foreach ($cart->items as $item) {
+                $product = Product::findOrFail($item->product_id);
+                
+                if ($product->quantity < $item->quantity) {
+                    return [
+                        'success' => false,
+                        'message' => "Insufficient stock for {$product->name}. Available: {$product->quantity}, Requested: {$item->quantity}"
+                    ];
+                }
+            }
+            return ['success' => true];
+        } catch (\Exception $e) {
+            \Log::error('Stock validation error: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error validating stock'
+            ];
+        }
+    }
+
+    public static function decrementStock($order)
+    {
+        try {
+            \DB::beginTransaction();
+
+            foreach ($order->orderItems as $item) {
+                $product = Product::findOrFail($item->product_id);
+                
+                if ($product->quantity < $item->quantity) {
+                    throw new \Exception("Insufficient stock for {$product->name}");
+                }
+
+                $product->decrement('quantity', $item->quantity);
+                
+                \Log::info("Stock decreased for product {$product->id}: -{$item->quantity}");
+            }
+
+            \DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Stock decrement error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public static function incrementStock($order)
+    {
+        try {
+            \DB::beginTransaction();
+
+            foreach ($order->orderItems as $item) {
+                $product = Product::findOrFail($item->product_id);
+                $product->increment('quantity', $item->quantity);
+                
+                \Log::info("Stock increased for product {$product->id}: +{$item->quantity}");
+            }
+
+            \DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Stock increment error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }

@@ -3,19 +3,14 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Company;
-use App\Models\GeneralSetting;
-use App\Models\JobListing;
-use App\Models\Product;
-use App\Models\QuizBank;
-use App\Models\QuizBankManagement;
-use App\Models\User;
-use Auth;
-use Cookie;
-use DB;
 use Illuminate\Http\Request;
-use Session;
-use setasign\Fpdi\Fpdi;
+use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\Blog;
+use App\Models\Service;
+use Cache;
+use DB;
+
 class HomeController extends Controller
 {   
     public function __construct(Request $request)
@@ -24,37 +19,117 @@ class HomeController extends Controller
         $this->request = $request;
     }
 
-    public function index(Request $request)
-    {  
-        if(!empty($request->reff))
-        {
-            $affiliate_user = User::where('affiliate_code','=',$request->reff)->first();
-            if(!empty($affiliate_user))
-            {
-                $gs = GeneralSetting::findOrFail(1);
-                if($gs->is_affilate == 1)
-                {
-                    Session::put('affilate', $affiliate_user->affiliate_code);
-                    return redirect()->route('front.index');
-                }
-            }
-
-        } 
-      $homecheck=true;
-      // $query = Company::active()->latest();
-      $companies = Company::active()->latest()->take(24)->get();
-      $quizmanagements = QuizBankManagement::active()->latest()->take(6)->get();
-      $tutors=User::where('role_id', 2)->active()->latest()->take(9)->get();
-      $joblistings = JobListing::active()->latest()->take(9)->get();
-
-
-      $products = Product::active()->latest()->take(3)->get();
-           
+    /**
+     * Show the home page.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        // Use cache to improve performance (cache for 1 hour)
+        $featuredProducts = Cache::remember('home_featured_products', 60*60, function () {
+            return Product::active()
+                // ->where('featured', true)
+                ->withCount('approvedReviews')
+                ->withAvg('approvedReviews', 'rating')
+                ->latest()
+                ->take(8)
+                ->get();
+        });
         
-
-
-
-       return view('front.index',compact('products','quizmanagements','companies','homecheck','tutors','joblistings'));
+        $latestProducts = Cache::remember('home_latest_products', 60*60, function () {
+            return Product::active()
+                ->withCount('approvedReviews')
+                ->withAvg('approvedReviews', 'rating')
+                ->latest()
+                ->take(8)
+                ->get();
+        });
+        
+        $categories = Cache::remember('home_categories', 60*60, function () {
+            return ProductCategory::active()
+                ->whereNull('parent_id')
+                ->with(['subcategories' => function ($query) {
+                    $query->active()->latest()->take(3);
+                }])
+                ->take(5)
+                ->get();
+        });
+        
+        // Get services for services section
+        $services = Cache::remember('home_services', 60*60, function () {
+            return Service::active()
+                ->latest()
+                ->take(3)
+                ->get();
+        });
+        
+        // Get latest blogs for blog section
+        $latestBlogs = Cache::remember('home_latest_blogs', 60*60, function () {
+            return Blog::with('category')
+                ->active()
+                ->latest()
+                ->take(3)
+                ->get();
+        });
+        
+        // Define all section content directly in the controller - no database needed
+        
+        // Hero section settings
+        $heroSection = (object)[
+            'badge_text' => 'Where Convenience Meets Innovation',
+            'heading_text' => 'Discover Our',
+            'heading_highlight' => 'New Collection',
+            'description' => 'Elevate your space with our premium collection of products, designed for comfort and sophistication.',
+            'button_text' => 'Explore More Products',
+            'button_link' => route('front.products.index'),
+        ];
+        
+        // Featured section settings
+        $featuredSection = (object)[
+            'title' => 'Featured Products',
+            'subtitle' => 'Discover our most popular and trending products',
+        ];
+        
+        // Category section settings
+        $categorySection = (object)[
+            'badge' => 'Featured Categories',
+            'title' => 'Discover Our Premium Selections',
+            'subtitle' => 'Explore our handpicked categories designed to enhance your digital lifestyle and experience.',
+        ];
+        
+        // Latest products section settings
+        $latestSection = (object)[
+            'badge' => 'New Arrivals',
+            'title' => 'Our Latest Products',
+            'subtitle' => 'Check out our newest products added to our collection.',
+        ];
+        
+        // Services section settings
+        $servicesSection = (object)[
+            'title' => 'Our Featured Services',
+            'subtitle' => 'We offer a wide range of services to help you achieve your business goals.'
+        ];
+        
+        // Blog section settings
+        $blogSection = (object)[
+            'title' => 'Latest Articles',
+            'subtitle' => 'Stay updated with our latest news and articles'
+        ];
+        
+        return view('front.index', compact(
+            'featuredProducts',
+            'latestProducts',
+            'categories',
+            'services',
+            'latestBlogs',
+            'heroSection',
+            'featuredSection',
+            'categorySection',
+            'latestSection',
+            'servicesSection',
+            'blogSection'
+        ));
     }
 
     public function page($slug)
@@ -79,6 +154,19 @@ class HomeController extends Controller
     {
         return view('front.codetail');
     }
+
+
+ 
+    public function getSubcategories($categoryId)
+    {
+       $subcategories = ProductCategory::where('parent_id', $categoryId)->get();
+        return response()->json([
+            'success' => true,
+            'subcategories' => $subcategories
+        ]);
+    }
+
+
 
     public function dropzoneStoreMedia(Request $request)
     {

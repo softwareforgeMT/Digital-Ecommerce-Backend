@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
-use App\CentralLogics\Cart;
+// use App\CentralLogics\Cart;
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
@@ -72,7 +72,7 @@ class RegisterController extends Controller
              $user->update();
           }
           //clear cart
-          Cart::clearCart();
+          //Cart::clearCart();
           Auth::guard('web')->login($user);
           $redirectTo=route('user.dashboard');
            return redirect()->intended(route('user.dashboard'))->with('success','Acount Registered Successfully');

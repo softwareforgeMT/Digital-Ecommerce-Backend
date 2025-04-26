@@ -1,5 +1,4 @@
-
- <div class="card">
+<div class="card">
     <div class="card-header align-items-center d-flex">
         <h4 class="card-title mb-0 flex-grow-1">Sales by Coupon</h4>
     </div><!-- end card header -->
@@ -29,3 +28,50 @@
             </div>
     </div><!-- end card body -->
 </div><!-- end card -->
+
+<div class="card">
+    <div class="card-header align-items-center d-flex">
+        <h4 class="card-title mb-0 flex-grow-1">Top Coupons</h4>
+    </div>
+    <div class="card-body">
+        @if(isset($coupons) && count($coupons) > 0)
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle table-nowrap mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Uses</th>
+                            <th>Total Discount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($coupons as $coupon)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="bg-light rounded p-1 me-2">
+                                            <i class="bx bxs-discount text-primary"></i>
+                                        </span>
+                                        <span class="fw-medium">{{ $coupon->coupon_code }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ $coupon->uses }}</td>
+                                <td>{{ Helpers::formatPrice($coupon->total_discount) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-4">
+                <div class="avatar-md mx-auto mb-4">
+                    <div class="avatar-title bg-light text-secondary rounded-circle fs-24">
+                        <i class="ri-coupon-line"></i>
+                    </div>
+                </div>
+                <h5 class="mb-2">No Coupon Usage Yet</h5>
+                <p class="text-muted">There's no coupon usage data available at the moment.</p>
+            </div>
+        @endif
+    </div>
+</div>

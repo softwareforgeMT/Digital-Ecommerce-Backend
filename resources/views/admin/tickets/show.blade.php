@@ -165,22 +165,22 @@
                                         <div class="message-body">
                                             <p>{{ $reply->message }}</p>
                                             @if($reply->attachments)
-                                                <div class="attachments mt-3">
-                                                    @foreach((array)$reply->attachments as $attachment)
-                                                        <div class="attachment-item">
-                                                            <div class="d-flex align-items-center p-2 border rounded bg-light">
-                                                                <i class="mdi mdi-file-document-outline fs-5 me-2 text-primary"></i>
-                                                                <div class="flex-grow-1 text-truncate">
-                                                                    {{ $attachment['original_name'] }}
-                                                                </div>
-                                                                <a href="{{ asset('storage/tickets/' . $attachment['filename']) }}" 
-                                                                    class="btn btn-sm btn-light rounded-circle" download>
-                                                                    <i class="mdi mdi-download"></i>
-                                                                </a>
+                                            <div class="attachments mt-3">
+                                                 @foreach(json_decode($reply->attachments, true) as $key=>$attachment)
+                                                    <div class="attachment-item">
+                                                        <div class="d-flex align-items-center p-2 border rounded bg-light">
+                                                            <i class="mdi mdi-file-document-outline fs-5 me-2 text-primary"></i>
+                                                            <div class="flex-grow-1 text-truncate">
+                                                                Attachment {{ $key+1 }}
                                                             </div>
+                                                            <a href="{!! Helpers::image($attachment, 'tickets/') !!}" 
+                                                                class="btn btn-sm btn-light rounded-circle" download>
+                                                                <i class="mdi mdi-download"></i>
+                                                            </a>
                                                         </div>
-                                                    @endforeach
-                                                </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                             @endif
                                         </div>
                                     </div>
@@ -197,7 +197,7 @@
                                     <div class="avatar-wrapper me-3">
                                         <div class="avatar {{ $reply->sender_type === 'admin' ? 'admin-avatar' : '' }}">
                                             @if($reply->sender_type === 'admin')
-                                                <img src="{{ asset('assets/images/users/admin-avatar.png') }}" alt="Admin">
+                                                <img src="{!! Helpers::image(Auth::guard('admin')->user()->photo, 'admin/images/','user.png') !!}" alt="Admin">
                                             @else
                                                 <img src="{{ $reply->sender && $reply->sender->photo ? 
                                                     Helpers::image($reply->sender->photo, 'user/avatar/','user.png') : 

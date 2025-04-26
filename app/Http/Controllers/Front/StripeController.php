@@ -3,80 +3,119 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\CentralLogics\ProductLogic;
+use App\Models\Order;
+use App\Models\Transaction;
 use App\CentralLogics\Helpers;
-use App\CentralLogics\OrderLogic;
-use App\CentralLogics\TransactionLogic;
-use Auth;
+use Stripe\Stripe;
+use Exception;
+use DB;
+
 class StripeController extends Controller
-{   
-    public function __construct(Request $request)
+{
+    public function __construct()
     {
-        $this->middleware('auth');
+        Stripe::setApiKey(env('STRIPE_SECRET'));
     }
 
-    public function processPayment(Request $request)
-    {   
-        $user=Auth::user();
-        $cartValidate = ProductLogic::cartValidate($request->payment_gateway_name);
-        if (is_array($cartValidate)) {
-            $initialprice = $cartValidate['initialprice'];
-            $checkoutfee = $cartValidate['checkoutfee'];
-            $totalprice = $cartValidate['totalprice'];
-            $product = $cartValidate['product'];
-            $quantity = $cartValidate['quantity'];
+    public function redirect($orderNumber) 
+    {
+        try {
+            $order = Order::where('order_number', $orderNumber)
+                         ->where('user_id', auth()->id())
+                         ->whereIn('status', ['pending', 'processing'])
+                         ->firstOrFail();
 
-            if(!$request->payment_method){
-               // $intent = auth()->user()->createSetupIntent();
-                // if user has already saved card
-                if($user->hasStripeId()) {
-                    $paymentMethod = $user->defaultPaymentMethod()->id;
-                } else {
-                    $paymentMethod = null;
-                }
-               return view('front.paymentgateways.stripe', compact('request','initialprice','product','totalprice','checkoutfee','paymentMethod'));
-            }else{
-                 $paymentMethod=$request->payment_method;
-                 $savecard = $request->input('save_card_details');
-                    try{
-                        if($savecard){
-                            $user->createOrGetStripeCustomer();
-                            $user->updateDefaultPaymentMethod($paymentMethod);
-                        }
-                        $metadata = [
-                            'product_name' => $product->game?$product->game->name:'',
-                            'product_id' => $product->id,
-                            'quantity' => $quantity
-                        ];
-                        $charge = $user->charge($totalprice * 100, $paymentMethod, [
-                            'metadata' => $metadata
-                        ]);
+            // Create Stripe checkout session
+            $session = \Stripe\Checkout\Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => strtolower($order->currency),
+                        'product_data' => [
+                            'name' => 'Order #' . $order->order_number,
+                            'description' => 'Payment for your order at ' . config('app.name'),
+                        ],
+                        'unit_amount' => intval($order->total * 100), // Convert to cents
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('front.payment.stripe.success', ['orderNumber' => $order->order_number]),
+                'cancel_url' => route('front.checkout.cancel', $order->order_number),
+                'metadata' => [
+                    'order_number' => $order->order_number,
+                    'user_id' => auth()->id()
+                ],
+                'customer_email' => auth()->user()->email,
+            ]);
 
-                        if($charge->status=='succeeded'){
-                             $payment_status='completed';
-                        }else{
-                            return back()->with('error','Something went wrong');
-                            //$payment_status='pending';
-                        }        
-                        $txn_id= $charge->id;
-                        $createOrder=OrderLogic::createOrder($request, $totalprice, $checkoutfee, $product, $quantity,$payment_status);
-                        $order= $createOrder; 
-                        $createtransaction=TransactionLogic::createTransaction($order->id,$order->user_id,$order->payment_gateway, $order->pay_amount,$order->checkout_fee,'checkout',$txn_id);
+            // Store session ID with order for verification
+            $order->update([
+                'meta' => array_merge($order->meta ?? [], ['stripe_session_id' => $session->id])
+            ]);
 
-                        return redirect()->route('user.order.purchased.show',$order->order_number)->with('success','Order placed SuccessFully');
-                            
-                    } catch (\Exception $exception) {
-                        return back()->with('error', $exception->getMessage());
-                    }
-                   
+            return redirect($session->url);
+
+        } catch(Exception $e) {
+            \Log::error('Stripe session creation error: ' . $e->getMessage());
+            return redirect()->route('user.orders.show', $order->order_number)
+                           ->with('error', 'Unable to initialize payment: ' . $e->getMessage());
+        }
+    }
+
+    public function callback($orderNumber)
+    {
+        try {
+            DB::beginTransaction();
+
+            $order = Order::where('order_number', $orderNumber)
+                         ->where('user_id', auth()->id())
+                         ->firstOrFail();
+
+            // Verify the payment was successful using Stripe webhook or session verification
+            $session = \Stripe\Checkout\Session::retrieve(
+                $order->meta['stripe_session_id'] ?? ''
+            );
+
+            if ($session->payment_status !== 'paid') {
+                throw new Exception('Payment was not successful');
             }
-            
-        }
-        else{
-            return $cartValidate;
-        }
 
-        
+            // Create transaction record
+            Transaction::create([
+                'order_id' => $order->id,
+                'transaction_id' => $session->payment_intent,
+                'payment_method' => 'stripe',
+                'amount' => $order->total,
+                'currency' => $order->currency,
+                'status' => 'completed',
+                'payload' => [
+                    'session_id' => $session->id,
+                    'payment_intent' => $session->payment_intent,
+                    'payment_status' => $session->payment_status,
+                    'customer_email' => $session->customer_email,
+                    'metadata' => $session->metadata->toArray()
+                ]
+            ]);
+
+            // Update order status
+            $order->update([
+                'payment_status' => 'completed',
+                'status' => 'processing'
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('user.orders.show', $order->order_number)
+                           ->with('success', 'Payment completed successfully!');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            \Log::error('Stripe payment verification error: ' . $e->getMessage());
+            
+            return redirect()->route('user.orders.show', $order->order_number)
+                           ->with('error', 'Payment verification failed: ' . $e->getMessage());
+        }
     }
+
 }

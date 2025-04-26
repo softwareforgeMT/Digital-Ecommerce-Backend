@@ -1,140 +1,117 @@
-@extends('user.layouts.master')
-@section('title')
-    @lang('translation.home')
-@endsection
+@extends('front.layouts.app')
+
 @section('content')
+<div class="container mx-auto px-4 py-12">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar -->
+        <div class="lg:w-1/4">
+            @include('user.partials.sidebar')
+        </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0 font-size-18"> Orders</h4>
-            <div class="page-title-right">
-                <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="{{route('user.dashboard')}}">Home</a></li> 
-                                       
-                    <li class="breadcrumb-item active">Orders</li>
-                    
-                </ol>
+        <!-- Main Content -->
+        <div class="lg:w-3/4">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold dark:text-white">My Orders</h1>
+                <a href="{{ route('front.products.index') }}" class="text-purple-600 hover:text-purple-700">
+                    <i class="fas fa-shopping-bag mr-2"></i>Continue Shopping
+                </a>
             </div>
 
-        </div>
-    </div>
-</div> 
-
-    <div>
-        <div class="row align-items-center gy-3 mb-3">
-            <div class="col-sm">
-                <div>
-                    <h5 class="fs-14 mb-0">Your Orders</h5>
-                </div>
-            </div>
-
-        </div>
-        @foreach ($orders as $order)
-            <div class="card product border border-1">
-                <div class="card-header py-2 bg-soft-dark">
-                    <div class="d-flex justify-content-between">
-                        <div class="">
-                            <p class="fs-14 text-muted mb-1 text-uppercase">Order Placed:</p>
-                            <h5 class="fs-16 mb-0">{{ $order->created_at->format('F d, Y') }}</h5>
-                        </div>
-                        <div class="text-end">
-                            <p class="fs-14 text-muted mb-1 text-uppercase">Order Id:</p>
-                            <h5 class="fs-16 mb-0"><span class="product-price">{{ $order->order_number }}</span></h5>
-                        </div>
+            @if($orders->isEmpty())
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-bag text-4xl text-gray-400"></i>
                     </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">You haven't placed any orders yet.</p>
+                    <a href="{{ route('front.products.index') }}" 
+                       class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                        Browse Products
+                    </a>
                 </div>
-                @foreach ($order->orderItems()->get() as $orderitem)
-                    @php
-                        $itemDetails = App\CentralLogics\Cart::getItemDetails($orderitem->item_type, $orderitem->item_id);
-                    @endphp
-                    <div class="card-body">
-                        <div class="row gy-3 ">
-
-                            <div class="col-md-9 d-flex ">
-                                <div class="avatar-lg me-3">
-                                    <img src="{{ $itemDetails['photo'] }}" alt="" class="img-fluid d-block bg-light rounded p-1">
-                                </div>
-                                <div class="">
-                                    <h3 class="fw-bold text-truncate d-block"><a href="#" class="text-dark">
-                                         {{ ucwords(str_replace("_", " ", $orderitem->item_type)) }}: {{ $itemDetails['name'] }}  </a>
-                                    </h3>
-                                    <div class="d-block">
-                                        @if($orderitem->item_type=== 'interview')
-                                            @php
-                                                $appointmentdata = App\Models\Appointment::where('student_id', Auth::id())
-                                                    ->where('order_item_id', $orderitem->id)
-                                                    ->latest()
-                                                    ->first();
-                                            @endphp
-                                        <p class="mb-0 pb-0">Booking Time:</p>
-
-                                            {{ isset($appointmentdata->start_date) ? \Carbon\Carbon::parse($appointmentdata->start_date)->format('d M, Y') : '' }}
-                                            {{ isset($appointmentdata->start_time) ? \Carbon\Carbon::parse($appointmentdata->start_time)->format('h:i A') : null }}
-                                     
-                                        @elseif($orderitem->item_type === 'events')
-                                        <p class="mb-0 pb-0">Event Date:</p>
-                                               {{ Carbon\Carbon::parse($itemDetails['event_date_time'])->format('F d, H:i A') }}
-                                        @endif
-                                    </div>  
-                                </div>      
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <div class="">
-
-                                    @if ($orderitem->item_type == 'events')
-                                        <a href="{{ $itemDetails['url'] }}" class="btn btn-primary">Visit Event</a>
-                                    @elseif($orderitem->item_type == 'quizbank')
-                                        <a href="{{ $itemDetails['url'] }}" class="btn btn-primary">Start your
-                                            Practices</a>
-                                    @elseif($orderitem->item_type == 'interview')
-                                        <a href="{{ $itemDetails['url'] }}#my_appointment" class="btn btn-primary">View
-                                            Appointments</a>
-                                    @elseif($orderitem->item_type == 'subscription_plan')
-                                        {{-- <a href="" class="btn btn-primary">Start your Practices</a> --}}
-                                    @endif
-                                    {{-- <a href="#" class="btn btn-warning ">Archive order</a> --}}
+            @else
+                <div class="space-y-6">
+                    @foreach($orders as $order)
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                            <!-- Order Header -->
+                            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h3 class="text-lg font-semibold dark:text-white">
+                                            Order #{{ $order->order_number }}
+                                        </h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            Placed on {{ $order->created_at->format('F d, Y') }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium inline-block
+                                            @if($order->status === 'completed') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
+                                            @elseif($order->status === 'processing') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300
+                                            @elseif($order->status === 'cancelled') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
+                                            @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
+                                            @endif">
+                                            {{ ucfirst($order->status) }}
+                                        </span>
+                                        <p class="mt-2 font-medium text-lg dark:text-white">{{ Helpers::formatPrice($order->total) }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                @endforeach
-                <!-- card body -->
-                <div class="card-footer">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 gy-3">
-                        <div>
-                            <div class="d-flex align-items-center gap-2 text-muted">
-                                {{--  <div>Estimated delivery :</div>
-                                <h5 class="fs-14 mb-0">Oct 27, 2019</h5> --}}
+
+                            <!-- Order Items -->
+                            <div class="p-6">
+                                <div class="space-y-4">
+                                    @foreach($order->orderItems as $item)
+                                        <div class="flex items-start gap-4">
+                                            <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                                                <img src="{{ Helpers::image($item->product->main_image ?? '', 'products/') }}" 
+                                                     alt="{{ $item->product_name }}"
+                                                     class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="flex-1">
+                                                <h4 class="font-medium dark:text-white">{{ $item->product_name }}</h4>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                    Qty: {{ $item->quantity }} × {{ Helpers::formatPrice($item->price) }}
+                                                </p>
+                                                @if($variations = $item->getFormattedVariations())
+                                                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                        @foreach($variations as $variation)
+                                                            <span class="inline-flex items-center gap-1">
+                                                                {{ $variation['name'] }}: 
+                                                                <span class="font-medium">{{ $variation['value'] }}</span>
+                                                                @if(!$loop->last) <span class="mx-1">•</span> @endif
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="font-medium dark:text-white">
+                                                    {{ Helpers::formatPrice($item->price * $item->quantity) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="mt-6 flex justify-end">
+                                    <a href="{{ route('user.orders.show', $order->order_number) }}" 
+                                       class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                        <span>View Details</span>
+                                        <i class="fas fa-arrow-right ml-2"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2 text-muted">
-                                <div>Total Price :</div>
-                                <h5 class="fs-14 mb-0"><span
-                                        class="product-line-price">{{ Helpers::setCurrency($order->pay_amount) }}</span>
-                                </h5>
-                            </div>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
-                <!-- end card footer -->
-            </div>
-        @endforeach
 
-
-
-        {{-- <div class="text-end mb-4">
-            <a href="/checkout" class="btn btn-success btn-label right ms-auto"><i
-                    class="ri-arrow-right-line label-icon align-bottom fs-16 ms-2"></i> Checkout</a>
-        </div> --}}
+                <!-- Pagination -->
+                <div class="mt-8">
+                    {{ $orders->links() }}
+                </div>
+            @endif
+        </div>
     </div>
-    </div>
-@endsection
-
-
-
-
-@section('script')
-    <script src="{{ URL::asset('/assets/js/app.min.js') }}"></script>
+</div>
 @endsection

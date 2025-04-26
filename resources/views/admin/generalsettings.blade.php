@@ -132,12 +132,22 @@
                                         <input type="text" class="form-control" id="basiInput" value="{{$data->slogan}}"  name="slogan" required>
                                     </div>
                                 </div>
-                                {{-- <div class="col-xl-6 col-md-6">
+                               <div class="col-xl-6 col-md-6">
                                     <div>
-                                        <label for="basiInput" class="form-label"> AliPay <small>Conversion Rate(GBP to HKD)</small></label>
-                                        <input type="text" class="form-control" id="basiInput" value="{{$data->alipay_conversion_rate}}"  name="alipay_conversion_rate" required>
+                                        <label for="bitValue" class="form-label">
+                                            Bit Value 
+                                            <small>(Total Bits × 0.001)</small>
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="bitValue" 
+                                               value="{{ $data->bit_value ?? '' }}" 
+                                               name="bit_value" 
+                                               step="0.0001"
+                                               required>
                                     </div>
-                                </div> --}}
+                                </div>
+
                                
                                 <!--end col-->
                                 <div class="col-12">

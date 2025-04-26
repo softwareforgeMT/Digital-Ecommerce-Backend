@@ -91,7 +91,7 @@ class UserController extends Controller
                             })
                             ->addColumn('action', function(User $data) {
                                 return '<div class="action-list g-2">
-                                 <a href="'.route('admin.users.show',$data->id).'" class="btn btn-info btn-sm fs-13 waves-effect waves-light mb-2"><i class="ri-eye-fill align-middle fs-16 me-2"></i>View</a> 
+                                 <a href="'.route('admin.users.show',$data->id).'" class="btn btn-info btn-sm fs-13 waves-effect waves-light"><i class="ri-eye-fill align-middle fs-16 me-2"></i>View</a> 
                                  <a href="' . route('admin.user.secret',$data->id) . '"  class="btn btn-sm fs-13 btn-danger waves-effect waves-light"><i class="ri-eye-fill align-middle fs-16 "></i> Secret Login</a>
                                 </div>';
                             }) 

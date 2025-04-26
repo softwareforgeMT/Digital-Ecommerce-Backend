@@ -3,19 +3,34 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use Illuminate\Http\Request;
-use Auth;
+
 class OrderController extends Controller
-{   
-    public function __construct(Request $request)
+{
+    public function __construct()
     {
         $this->middleware('auth');
-        $this->request = $request;
     }
-    public function index($value='')
-    {  
-       $orders=Order::where('user_id',Auth::id())->latest()->get(); 
-       return view('user.orders.index',compact('orders'));
+    
+    public function index()
+    {
+        // fetch via the user relation, with pagination
+        $orders = auth()->user()
+                       ->orders()
+                       ->latest()
+                       ->paginate(10);
+                      
+        return view('user.orders.index', compact('orders'));
+    }
+    
+    public function show($orderNumber)
+    {
+        // fetch a single order via the relation
+        $order = auth()->user()
+                      ->orders()
+                      ->where('order_number', $orderNumber)
+                      ->firstOrFail();
+                     
+        return view('user.orders.show', compact('order'));
     }
 }

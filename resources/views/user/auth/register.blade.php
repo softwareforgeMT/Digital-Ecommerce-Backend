@@ -2,119 +2,155 @@
 @section('title') Sign Up @endsection
 
 @section('content')
-<div class="relative min-h-screen py-20">
-    <div class="hero-glow opacity-30"></div>
-    
-    <div class="container mx-auto px-4">
-        <div class="max-w-md mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
-                    Create Account
-                </h1>
-                <p class="text-gray-400">Join our gaming community today</p>
-            </div>
+<div class="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Glowing background effects -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute right-[40%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 dark:bg-purple-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob"></div>
+        <div class="absolute left-[40%] bottom-[20%] w-[500px] h-[500px] bg-blue-500/30 dark:bg-blue-500/20 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob animation-delay-2000"></div>
+    </div>
 
-            <!-- Register Form Card -->
-            <div class="card-glow rounded-xl backdrop-blur-sm p-8">
-                <form method="POST" action="{{ route('user.register') }}" enctype="multipart/form-data">
-                    @include('includes.alerts')
-                    @csrf
+    <div class="relative w-full max-w-md space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
+                Create Account
+            </h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Join our gaming community today</p>
+        </div>
 
-                    <!-- Username Input -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+        <!-- Register Form Card -->
+        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/20 dark:border-white/10 p-8">
+            <form method="POST" action="{{ route('user.register') }}" enctype="multipart/form-data" class="space-y-6">
+                @include('includes.alerts')
+                @csrf
+
+                <!-- Username Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                    <div class="relative group">
                         <input type="text" name="name" required
-                               class="w-full bg-purple-500/5 border border-purple-500/20 rounded-lg px-4 py-3 
-                                      focus:outline-none focus:border-purple-500/40"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 
+                                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
+                                      placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                      transition duration-200 group-hover:border-purple-500/50"
                                placeholder="Choose a username" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                            <i class="fas fa-user"></i>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Email Input -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
+                <!-- Email Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                    <div class="relative group">
                         <input type="email" name="email" required
-                               class="w-full bg-purple-500/5 border border-purple-500/20 rounded-lg px-4 py-3 
-                                      focus:outline-none focus:border-purple-500/40"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 
+                                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
+                                      placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                      transition duration-200 group-hover:border-purple-500/50"
                                placeholder="Enter your email" />
-                    </div>
-
-                    <!-- Password Fields -->
-                    <div class="mb-6">
-                        <div class=" ts-form-control--icon ts-form-control--icon-lock">
-                            <input type="password" name="password" class="w-full bg-purple-500/5 border border-purple-500/20 rounded-lg px-4 py-3 
-                                      focus:outline-none focus:border-purple-500/40"
-                               id="password-input" required placeholder="password" />
-
-                            <button class="btn btn-link position-absolute end-0 bottom-0 fs-16 text-decoration-none text-muted" type="button" id="password-addon" onclick="togglePasswordVisibility()"><i class="ri-eye-fill align-middle"></i></button>
-                        </div>
-                        <div class=" ts-form-control--icon mb-3 ts-form-control--icon-lock">
-                            <input type="password" name="password_confirmation"
-                                class="w-full bg-purple-500/5 border border-purple-500/20 rounded-lg px-4 py-3 
-                                      focus:outline-none focus:border-purple-500/40" id="confirmPasswordSignup" required
-                                placeholder="repeat password" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                            <i class="fas fa-envelope"></i>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Terms Checkbox -->
-                    <div class="mb-6">
-                        <label class="flex items-center">
-                            <input type="checkbox" required
-                                   class="w-4 h-4 rounded border-purple-500/20 text-purple-500 
-                                          focus:ring-purple-500 focus:ring-offset-0 bg-purple-500/5"/>
-                            <span class="ml-2 text-sm text-gray-400">
-                                I agree to the 
-                                <a href="{{ route('front.help.terms') }}" 
-                                   class="text-purple-400 hover:text-purple-300">
-                                    Terms of Service
-                                </a>
-                            </span>
-                        </label>
+                <!-- Password Fields -->
+                <div class="space-y-4">
+                    <div class="relative group">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                        <input type="password" name="password" id="password-input" required
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 
+                                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
+                                      placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                      transition duration-200 group-hover:border-purple-500/50"
+                               placeholder="Create password" />
                     </div>
 
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary w-full mb-6">
-                        Create Account
-                    </button>
-
-                    <div class="relative text-center mb-6">
-                        <span class="px-3 bg-dark-purple relative z-10 text-sm text-gray-400">
-                            or sign up with
-                        </span>
-                        <div class="absolute top-1/2 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent -z-1"></div>
+                    <div class="relative group">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                        <input type="password" name="password_confirmation" required
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 
+                                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
+                                      placeholder-gray-500 dark:placeholder-gray-400
+                                      focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                      transition duration-200 group-hover:border-purple-500/50"
+                               placeholder="Confirm password" />
                     </div>
+                </div>
 
-                    <!-- Social Login Buttons -->
-                    <div class="mb-6">
-                        @if ($gs->google_login == 1)
-                            <a href="{{ url('oauth/google') }}" 
-                               class="w-full flex items-center justify-center space-x-3 py-3 px-4 
-                                      bg-white/5 hover:bg-white/10 
-                                      border border-purple-500/20 hover:border-purple-500/30 
-                                      backdrop-blur-sm rounded-lg transition-all duration-200">
-                                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                                    <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z"/>
-                                    <path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-4.04 3.067A11.965 11.965 0 0 0 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987Z"/>
-                                    <path fill="#4A90E2" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21Z"/>
-                                    <path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 0 1 4.909 12c0-.782.125-1.533.357-2.235L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.04-3.067Z"/>
-                                </svg>
-                                <span>Continue with Google</span>
+                <!-- Terms Checkbox -->
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" required
+                               class="w-4 h-4 rounded border-gray-200 dark:border-gray-700 text-purple-500 
+                                      focus:ring-purple-500 focus:ring-offset-0 bg-white dark:bg-gray-800"/>
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            I agree to the 
+                            <a href="{{ route('front.help.terms') }}" 
+                               class="text-purple-500 hover:text-purple-400">
+                                Terms of Service
                             </a>
-                        @endif
-                    </div>
+                        </span>
+                    </label>
+                </div>
 
-                    <!-- Sign In Link -->
-                    <p class="text-center text-sm text-gray-400">
-                        Already have an account? 
-                        <a href="{{ route('user.login') }}" 
-                           class="text-purple-400 hover:text-purple-300">
-                            Sign in
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="w-full bg-primary-gradient text-white px-4 py-3 rounded-lg flex items-center gap-2 hover:shadow-lg transition-all duration-300 group justify-center">
+                    <span class="relative flex items-center justify-center">
+                        Create Account
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transform group-hover:translate-x-1 transition-transform" 
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="relative text-center">
+                    <span class="px-3 bg-gray-50 dark:bg-gray-900 relative z-10 text-sm text-gray-600 dark:text-gray-400">
+                        or sign up with
+                    </span>
+                    <div class="absolute top-1/2 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent -z-1"></div>
+                </div>
+
+                <!-- Social Login Buttons -->
+                <div>
+                    @if ($gs->google_login == 1)
+                        <a href="{{ url('oauth/google') }}" 
+                           class="w-full flex items-center justify-center space-x-3 py-3 px-4 
+                                  bg-white/5 hover:bg-white/10 
+                                  border border-purple-500/20 hover:border-purple-500/30 
+                                  backdrop-blur-sm rounded-lg transition-all duration-300 
+                                  hover:-translate-y-1 hover:shadow-lg
+                                  text-gray-700 dark:text-gray-300">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z"/>
+                                <path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-4.04 3.067A11.965 11.965 0 0 0 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987Z"/>
+                                <path fill="#4A90E2" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21Z"/>
+                                <path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 0 1 4.909 12c0-.782.125-1.533.357-2.235L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.04-3.067Z"/>
+                            </svg>
+                            <span>Continue with Google</span>
                         </a>
-                    </p>
-                </form>
-            </div>
+                    @endif
+                </div>
+
+                <!-- Sign In Link -->
+                <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+                    Already have an account? 
+                    <a href="{{ route('user.login') }}" 
+                       class="text-purple-500 hover:text-purple-400 transition duration-200">
+                        Sign in
+                    </a>
+                </p>
+            </form>
         </div>
     </div>
 </div>
+
 @include('user.auth.includes.modals')
 @endsection

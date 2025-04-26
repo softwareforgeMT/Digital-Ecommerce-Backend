@@ -3,125 +3,143 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\CentralLogics\ProductLogic;
-use App\CentralLogics\Helpers;
-use App\CentralLogics\OrderLogic;
-use App\CentralLogics\TransactionLogic;
-use Auth;
 use App\Models\Order;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
+use Exception;
+use DB;
+use Log;
+
 class PaypalController extends Controller
-{   
-    public function __construct(Request $request)
+{
+    protected PayPalClient $provider;
+
+    public function __construct()
     {
-        $this->middleware('auth');
-    }
-    public function processPayment(Request $request)
-    {   
-        $user=Auth::user();
-        $cartValidate = ProductLogic::cartValidate($request->payment_gateway_name);
-        if (is_array($cartValidate)) {
-            $initialprice = $cartValidate['initialprice'];
-            $checkoutfee = $cartValidate['checkoutfee'];
-            $totalprice = $cartValidate['totalprice'];
-            $product = $cartValidate['product'];
-            $quantity = $cartValidate['quantity'];
-            
-            session()->put('payment_gateway_name', $request->input('payment_gateway_name')); 
-            session()->put('game_username', $request->input('game_username')); 
-
-             // Init PayPal
-            try{
-                $provider = new PayPalClient();
-                $token = $provider->getAccessToken();
-                $provider->setAccessToken($token);         
-                $data = json_decode('{
-                    "intent": "CAPTURE",
-                    "application_context": {
-                        "brand_name": "GZ2gamer",
-                        "locale": "en-US",
-                        "payment_method": {
-                            "payer_selected": "PAYPAL",
-                            "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
-                        },
-                        "return_url": "'.route('paypal.success').'",
-                        "cancel_url": "'.route('paypal.cancel').'"
-                    },
-                    "purchase_units": [
-                        {
-                            "amount": {
-                                "currency_code": "USD",
-                                "value": "'.$totalprice.'"
-                            },
-                            "description": "Purchase of game items by'.auth()->user()->name.'"  
-                        }
-                    ]
-                }', true);
-
-                $order = $provider->createOrder($data);          
-                return redirect($order['links'][1]['href']);
-
-            } catch (\Exception $e) {
-                \Log::debug($e);
-                return back()->with('erorr',$e->getMessage());               
-            }
-            
-        }
-        else{
-            return $cartValidate;
-        }
-
-
-        
+        $this->provider = new PayPalClient();
+        // load credentials & generate access token
+        $this->provider->setApiCredentials(config('paypal'));
+        $this->provider->getAccessToken();
     }
 
-    public function verifyTransaction(Request $request)
-    {   
-
-        // Init PayPal
-        $provider = new PayPalClient();
-        $token = $provider->getAccessToken();
-        $provider->setAccessToken($token);
-
-           try {
-                // Get PaymentOrder using our transaction ID
-                $orderResponse = $provider->capturePaymentOrder($request->token);
-                $txn_id = $orderResponse['purchase_units'][0]['payments']['captures'][0]['id'];
-                // Parse the custom data parameters
-                parse_str($orderResponse['purchase_units'][0]['payments']['captures'][0]['custom_id'] ?? null, $data);
-
-                if ($orderResponse['status'] && $orderResponse['status'] === "COMPLETED") {
-                    $payment_status='completed';
-                    
-                    $request['game_username']=session()->get('game_username');
-                    $request['payment_gateway_name']=session()->get('payment_gateway_name');
-                    $cartValidate = ProductLogic::cartValidate($request->payment_gateway_name);
-                    if (is_array($cartValidate)) {
-                        $initialprice = $cartValidate['initialprice'];
-                        $checkoutfee = $cartValidate['checkoutfee'];
-                        $totalprice = $cartValidate['totalprice'];
-                        $product = $cartValidate['product'];
-                        $quantity = $cartValidate['quantity'];
-
-                        $payment_status='completed';
-                        $createOrder=OrderLogic::createOrder($request, $totalprice, $checkoutfee, $product, $quantity,$payment_status);
-                        $order= $createOrder; 
-                        $createtransaction=TransactionLogic::createTransaction($order->id,$order->user_id,$order->payment_gateway, $order->pay_amount,$order->checkout_fee,'checkout',$txn_id);
-                    }else{
-                         return $cartValidate;
-                    }
-
-                    return redirect()->route('user.order.purchased.show',$order->order_number)->with('success','Order placed SuccessFully');
-                }
-            }catch(\Exception $e){
-               return redirect()->route('front.index')->with('erorr',$e->getMessage());
-            }
-    }
-
-    public function cancelPaypal($value='')
+    /**
+     * Create PayPal order & redirect user to approval URL
+     */
+    public function redirect(string $orderNumber)
     {
-       return redirect()->route('front.checkout')->with('erorr',"Payment Cancelled");
+        try {
+            $order = Order::where('order_number', $orderNumber)
+                          ->where('user_id', auth()->id())
+                          ->whereIn('status', ['pending', 'processing'])
+                          ->firstOrFail();
+
+            $payload = [
+                'intent'             => 'CAPTURE',
+                'purchase_units'     => [[
+                    'reference_id' => $order->order_number,
+                    'amount'       => [
+                        'currency_code' => strtoupper($order->currency),
+                        'value'         => number_format($order->total, 2, '.', ''),
+                    ],
+                    'description'  => 'Order #' . $order->order_number,
+                ]],
+                'application_context' => [
+                    'brand_name'             => config('app.name'),
+                    'return_url'             => route('front.payment.paypal.success',   ['orderNumber' => $orderNumber]),
+                    'cancel_url'             => route('front.checkout.cancel',         ['orderNumber' => $orderNumber]),
+                    'user_action'            => 'PAY_NOW',
+                ],
+            ];
+
+            $response = $this->provider->createOrder($payload);
+
+            if (empty($response['id']) || empty($response['links'])) {
+                throw new Exception('Invalid createOrder response');
+            }
+
+            // store PayPal order ID
+            $order->update([
+                'meta' => array_merge($order->meta ?? [], [
+                    'paypal_order_id' => $response['id'],
+                ]),
+            ]);
+
+            // find approval link
+            $approvalUrl = collect($response['links'])
+                ->firstWhere('rel', 'approve')['href'] ?? null;
+
+            if (! $approvalUrl) {
+                throw new Exception('Approval URL not found');
+            }
+
+            return redirect()->away($approvalUrl);
+
+        } catch (Exception $e) {
+            Log::error('PayPal createOrder error: '.$e->getMessage());
+            return redirect()
+                ->route('user.orders.show', $orderNumber)
+                ->with('error', 'Unable to initialize PayPal payment: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Handle PayPal callback & capture payment
+     */
+    public function callback(Request $request, string $orderNumber)
+    {
+        try {
+            DB::beginTransaction();
+
+            $order = Order::where('order_number', $orderNumber)
+                          ->where('user_id', auth()->id())
+                          ->firstOrFail();
+
+            // PayPal returns token param = PayPal order ID
+            $paypalOrderId = $request->query('token')
+                             ?: ($order->meta['paypal_order_id'] ?? null);
+
+            if (! $paypalOrderId) {
+                throw new Exception('Missing PayPal order ID');
+            }
+
+            // capture payment
+            $captureResponse = $this->provider->capturePaymentOrder($paypalOrderId);
+
+            if (($captureResponse['status'] ?? '') !== 'COMPLETED') {
+                throw new Exception('Payment not completed: '.($captureResponse['status'] ?? 'unknown'));
+            }
+
+            // record transaction
+            Transaction::create([
+                'order_id'       => $order->id,
+                'transaction_id' => $captureResponse['id'],
+                'payment_method' => 'paypal',
+                'amount'         => $order->total,
+                'currency'       => $order->currency,
+                'status'         => 'completed',
+                'payload'        => $captureResponse,
+            ]);
+
+            // update order
+            $order->update([
+                'payment_status' => 'completed',
+                'status'         => 'processing',
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('user.orders.show', $orderNumber)
+                ->with('success', 'Payment completed successfully via PayPal!');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('PayPal capture error: '.$e->getMessage());
+
+            return redirect()
+                ->route('user.orders.show', $orderNumber)
+                ->with('error', 'PayPal payment failed: '.$e->getMessage());
+        }
     }
 }

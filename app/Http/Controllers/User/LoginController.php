@@ -105,4 +105,15 @@ class LoginController extends Controller
             }else{  return response()->json(['error' => $response['error'] ]); }
           }
     }
+
+    protected function authenticated(Request $request, $user)
+    {
+        // Update last login timestamp
+        $user->update([
+            'last_login' => now()
+        ]);
+        
+        // Continue with normal login flow
+        return redirect()->intended(route('user.dashboard'));
+    }
 }

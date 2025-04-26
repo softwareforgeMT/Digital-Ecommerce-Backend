@@ -31,21 +31,63 @@ class DashboardController extends Controller
         $this->request = $request;
     }
 
-   public function index($value='')
-   {
-       $gs = GeneralSetting::find(1);
-       $created_at = Carbon::parse(Auth::user()->created_at);
-       $products = \App\Models\Product::active()->latest()->take(2)->get(); // Add this line
-       
-       return view('user.dashboard', compact('gs', 'created_at', 'products'));
-   }
+    public function index()
+    {
+        $user = auth()->user();
+        $now = Carbon::now();
+        
+        // Basic stats - count all orders regardless of payment status
+        $totalOrders = $user->orders()->count();
+        
+        // Total spent should only include orders with completed payments
+        $totalSpent = $user->orders()
+            ->where('payment_status', 'completed')
+            ->sum('total');
+        
+        // Advanced stats - only count orders with completed payments for financial stats
+        $recentOrdersCount = $user->orders()
+            ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->count();
+            
+        // Pending orders should include both pending status and pending payments
+        $pendingOrders = $user->orders()
+            ->where(function($query) {
+                $query->whereIn('status', ['pending', 'processing'])
+                      ->orWhere('payment_status', 'pending');
+            })
+            ->count();
+            
+        // Average value of completed orders only
+        $paidOrdersCount = $user->orders()->where('payment_status', 'completed')->count();
+        $avgOrderValue = $paidOrdersCount > 0 ? $totalSpent / $paidOrdersCount : 0;
+        
+        // Recent orders for display - include payment status information
+        $recentOrders = $user->orders()
+            ->with(['orderItems', 'transaction'])
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        $gs = GeneralSetting::find(1);
+
+        return view('user.dashboard', compact(
+            'totalOrders', 
+            'totalSpent', 
+            'recentOrders',
+            'recentOrdersCount',
+            'pendingOrders',
+            'paidOrdersCount',
+            'avgOrderValue',
+            'gs'
+        ));
+    }
 
     public function profile()
     {
         $data = Auth::user();
         $gs=GeneralSetting::find(1);
-        $documents=Banner::active()->where('for_section','document')->orderBy('id','asc')->take(10)->get();
-        $alldocuments=Banner::active()->where('for_section','document')->count();
+        
         $link=route('front.index').'?reff='.Auth::user()->affiliate_code;
             $title=$gs->name;
             $socialShare = \Share::page($link,$title)
@@ -57,51 +99,99 @@ class DashboardController extends Controller
             ->getRawLinks();
             // ->telegram();
         $products = Product::active()->latest()->take(2)->get();
-        return view('user.profile',compact('data','socialShare','documents','alldocuments','products'));
+        return view('user.profile',compact('data','socialShare','products'));
     }
 
     public function accountSettings()
     {
         $data = Auth::user();
-        $countries=Country::where('status',1)->get();
-        return view('user.account-settings',compact('data','countries'));
+        return view('user.settings.account', compact('data'));
     }
 
     public function accountSettingsUpdate(Request $request)
     {
-        //--- Validation Section
         $request->validate([
-         'photo' => 'mimes:jpeg,jpg,png,svg',
-         'name' => 'unique:users,name,'.Auth::user()->id,
+            'photo' => 'nullable|mimes:jpeg,jpg,png,svg|max:2048',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
         ]);
 
-        //--- Validation Section Ends
-         $data = Auth::user();
-        //image upload
-        $data->photo = Helpers::update('user/avatar/', $data->photo=='user.png'?'':$data->photo, config('fileformats.image'), $request->file('photo'));
-        $data->name=$request->name;
-        $data->phone=$request->phone;
-        if(!$data->country_id){
-            $data->country_id=$request->country_id;
+        try {
+            $user = Auth::user();
+            
+            if ($request->hasFile('photo')) {
+
+                $user->photo = Helpers::update('user/avatar/', 
+                    $user->photo == 'user.png' ? '' : $user->photo, 
+                     config('fileformats.image'), 
+                    $request->file('photo')
+                );
+            }
+
+            $user->update([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'gender' => $request->gender,
+            ]);
+
+            return redirect()->back()->with([
+                'message' => 'Profile updated successfully!',
+                'alert-class' => 'alert-success'
+            ]);
+        } catch (\Exception $e) {
+          
+            \Log::error('Profile update error: ' . $e->getMessage());
+            return redirect()->back()->with([
+                'message' => 'Error updating profile. Please try again.',
+                'alert-class' => 'alert-danger'
+            ]);
         }
-        
+    }
 
-        $data->gender=$request->gender;
-        $data->university=$request->university;
-        $data->maj_sub=$request->maj_sub;
+    public function changePassword()
+    {
+        return view('user.settings.password');
+    }
 
-        $data->update();
+    public function changePasswordUpdate(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => [
+                'required',
+                'min:8',
+                'different:current_password',
+                'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/'
+            ],
+            'confirm_password' => 'required|same:new_password',
+        ]);
 
-        Session::flash('message', 'Data Updated Successfully !');
-        Session::flash('alert-class', 'alert-success');
-        if (Session::has('add_payment_gateway')) {
-             Session::forget('add_payment_gateway');
-            // Redirect to the earnings route
-            return redirect()->route('user.earnings');       
-        }else{
-            return redirect()->back();
+        try {
+            $user = Auth::user();
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return redirect()->back()->with([
+                    'message' => 'Current password is incorrect',
+                    'alert-class' => 'alert-danger'
+                ]);
+            }
+
+            $user->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+
+            return redirect()->back()->with([
+                'message' => 'Password changed successfully!',
+                'alert-class' => 'alert-success'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Password change error: ' . $e->getMessage());
+            return redirect()->back()->with([
+                'message' => 'Error changing password. Please try again.',
+                'alert-class' => 'alert-danger'
+            ]);
         }
-        
     }
 
     public function resetform()
@@ -132,7 +222,28 @@ class DashboardController extends Controller
         return redirect()->back();
     }
 
-
+    public function logoutOtherDevices(Request $request)
+    {
+        try {
+            // Get current session ID
+            $currentSessionId = $request->session()->getId();
+            
+            // Revoke all sessions except the current one
+            DB::table('sessions')
+                ->where('user_id', auth()->id())
+                ->where('id', '!=', $currentSessionId)
+                ->delete();
+            
+            Session::flash('message', 'You have been logged out from all other devices.');
+            Session::flash('alert-class', 'alert-success');
+        } catch (\Exception $e) {
+            \Log::error('Error in logoutOtherDevices: ' . $e->getMessage());
+            Session::flash('message', 'There was an error processing your request. Please try again later.');
+            Session::flash('alert-class', 'alert-danger');
+        }
+        
+        return redirect()->back();
+    }
 
     public function storeMedia(Request $request)
     {
