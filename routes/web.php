@@ -423,8 +423,8 @@ Route::group(['as' => 'user.'], function () {
 
 // Social Login
 Route::group(['middleware' => 'guest'], function() {
-    Route::get('oauth/{provider}',[App\Http\Controllers\User\Auth\SocialAuthController::class, 'redirect'])->where('provider', '(facebook|google|twitter)$');
-    Route::get('oauth/{provider}/callback',[App\Http\Controllers\User\Auth\SocialAuthController::class, 'callback'])->where('provider', '(facebook|google|twitter)$');
+    Route::get('oauth/{provider}',[App\Http\Controllers\User\Auth\SocialAuthController::class, 'redirect'])->where('provider', '(facebook|google|twitter|discord)$');
+    Route::get('oauth/{provider}/callback',[App\Http\Controllers\User\Auth\SocialAuthController::class, 'callback'])->where('provider', '(facebook|google|twitter|discord)$');
 });//<--- End Group guest
 
 

@@ -172,6 +172,8 @@ trait PayPalHttpClient
 
         $validateSSL = empty($this->validateSSL) ? true : $this->validateSSL;
         $this->validateSSL = $validateSSL;
+
+        $this->showTotals(true);
     }
 
     /**

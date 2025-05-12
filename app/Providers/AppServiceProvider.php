@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\CentralLogics\CartLogics;
 use App\CentralLogics\Helpers;
+use Socialite;
+use SocialiteProviders\Discord\Provider as DiscordProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +41,20 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $view->with('CartLogics', CartLogics::class);
             $view->with('Helpers', Helpers::class);
+        });
+
+        Socialite::extend('discord', function ($app) {
+            $config = $app['config']['services.discord'];
+            $request = $app['request'];  // Get the correct Request instance
+            $encrypter = $app['encrypter']; // Encrypter for security
+
+            return new DiscordProvider(
+                $request, // Pass the Request instance here
+                $encrypter,
+                $config['client_id'],
+                $config['client_secret'],
+                $config['redirect']
+            );
         });
     }
 }
