@@ -76,7 +76,8 @@
             serverSide: true,
             ajax: '{{ route("admin.bit-submissions.datatables") }}',
             columns: [
-                { data: 'id', name: 'id' },
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+
                 { data: 'user', name: 'user' },
                 { data: 'task', name: 'task' },
                 { data: 'value', name: 'value' },

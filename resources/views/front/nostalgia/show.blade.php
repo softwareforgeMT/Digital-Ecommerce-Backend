@@ -1,10 +1,7 @@
 @extends('front.layouts.app')
 
-@section('meta')
-    <title>{{ $item->name }} - {{ config('app.name') }}</title>
-    <meta name="description" content="{{ Str::limit(strip_tags($item->description), 160) }}">
-    <link rel="canonical" href="{{ url()->current() }}">
-@endsection
+@section('meta_title', $item->name )
+@section('meta_description', Str::limit(strip_tags($item->description), 160)  )
 
 @section('content')
     <!-- Banner Section -->
@@ -48,72 +45,19 @@
                     </div>
                 @endif
 
-                <!-- Description -->
-                <div class="prose prose-lg max-w-none dark:prose-invert mb-8">
-                    {!! $item->description !!}
-                </div>
-
+                
                 <!-- Tags -->
-                @if(!empty($item->tags))
+                {{-- @if(!empty($item->tags))
                     <div class="flex flex-wrap gap-3 mb-8">
                         @foreach(json_decode($item->tags, true) as $tag)
                             <x-tag>{{ $tag }}</x-tag>
                         @endforeach
                     </div>
-                @endif
-
-                <!-- Related Items -->
-                @if($related->count() > 0)
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-8 mt-8">
-                        <h3 class="text-2xl font-bold mb-6 dark:text-white">Related Items</h3>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            @foreach($related as $relatedItem)
-                                <a href="{{ route('front.nostalgia.show', $relatedItem->slug) }}" 
-                                   class="group">
-                                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-                                        @if($relatedItem->gallery)
-                                            <img src="{{ Helpers::image(json_decode($relatedItem->gallery)[0], 'nostalgia/items/') }}" 
-                                                 alt="{{ $relatedItem->name }}"
-                                                 class="w-full h-40 object-cover">
-                                        @endif
-                                        <div class="p-4">
-                                            <h4 class="font-semibold group-hover:text-purple-600 dark:text-white transition-colors">
-                                                {{ $relatedItem->name }}
-                                            </h4>
-                                            @if($relatedItem->release_year)
-                                                <span class="text-sm text-gray-500">
-                                                    Released: {{ $relatedItem->release_year }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-            </div>
-
-            <!-- Sidebar -->
-            <div class="lg:w-1/3">
-                <!-- Specifications -->
-                @if(!empty($item->formatted_specifications))
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-                        <h3 class="text-xl font-semibold mb-4 dark:text-white">Specifications</h3>
-                        <dl class="space-y-3">
-                            @foreach($item->formatted_specifications as $key => $value)
-                                <div>
-                                    <dt class="text-gray-600 dark:text-gray-400 text-sm">{{ Str::title(str_replace('_', ' ', $key)) }}</dt>
-                                    <dd class="text-gray-900 dark:text-white font-medium">{{ $value }}</dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                    </div>
-                @endif
+                @endif --}}
 
                 <!-- External Resources -->
                 @if(!empty($item->formatted_resources))
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                  {{--   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
                         <h3 class="text-xl font-semibold mb-6 dark:text-white">Resources</h3>
                         <div class="space-y-6">
                             @foreach($item->formatted_resources as $key => $links)
@@ -167,8 +111,114 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div> --}}
+                    <div class="bg-white11 dark:bg-gray-80011 rounded-xl1 shadow-sm1 p-4">
+                        {{-- <h3 class="text-xl font-semibold mb-4 dark:text-white">Resources</h3> --}}
+                        <div class="flex flex-wrap -mx-2">
+                            @foreach($item->formatted_resources as $key => $links)
+                                <div class="px-2 w-1/4">
+                                    <h4 class="text-gray-900 dark:text-gray-100 font-medium mb-2">
+                                        @switch($key)
+                                            @case('external_links')
+                                                External Links
+                                                @break
+                                            @case('common_faults')
+                                                Known Issues
+                                                @break
+                                            @case('guides')
+                                                Repair Guides
+                                                @break
+                                            @case('buy_links')
+                                                Where to Buy
+                                                @break
+                                            @default
+                                                {{ Str::title(str_replace('_', ' ', $key)) }}
+                                        @endswitch
+                                    </h4>
+                                    <ul class="space-y-1">
+                                        @foreach(explode(',', $links) as $link)
+                                            <li>
+                                                @if(filter_var(trim($link), FILTER_VALIDATE_URL))
+                                                    <a href="{{ trim($link) }}" 
+                                                       target="_blank" 
+                                                       class="text-blue-600 dark:text-blue-400 hover:underline">
+                                                        {{ parse_url(trim($link))['host'] ?? trim($link) }}
+                                                    </a>
+                                                @else
+                                                    <span class="text-gray-700 dark:text-gray-300">{{ trim($link) }}</span>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @endif
+
+            <div class="bg-white mt-5 dark:bg-gray-800 rounded-xl shadow-sm p-4">
+                        <h3 class="text-xl font-semibold mb-4 dark:text-white">Description</h3>
+                <!-- Description -->
+                <div class="prose prose-lg max-w-none dark:prose-invert mb-8">
+                    {!! $item->description !!}
+                </div>
+            </div>
+
+
+                <!-- Related Items -->
+                @if($related->count() > 0)
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-8 mt-8">
+                        <h3 class="text-2xl font-bold mb-6 dark:text-white">Related Items</h3>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            @foreach($related as $relatedItem)
+                                <a href="{{ route('front.nostalgia.show', $relatedItem->slug) }}" 
+                                   class="group">
+                                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                                        @if($relatedItem->gallery)
+                                            <img src="{{ Helpers::image(json_decode($relatedItem->gallery)[0], 'nostalgia/items/') }}" 
+                                                 alt="{{ $relatedItem->name }}"
+                                                 class="w-full h-40 object-cover">
+                                        @endif
+                                        <div class="p-4">
+                                            <h4 class="font-semibold group-hover:text-purple-600 dark:text-white transition-colors">
+                                                {{ $relatedItem->name }}
+                                            </h4>
+                                            @if($relatedItem->release_year)
+                                                <span class="text-sm text-gray-500">
+                                                    Released: {{ $relatedItem->release_year }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:w-1/3">
+                <!-- Specifications -->
+                @if(!empty($item->formatted_specifications))
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+                        
+                        <div class="space-y-4">
+                            @foreach($item->formatted_specifications as $key => $value)
+                                <div class="border-b border-gray-200 dark:border-gray-700 py-2 text-center">
+                                    <div class="font-bold text-lg mb-1 text-gray-800 dark:text-gray-200">
+                                        {{ Str::title(str_replace('_', ' ', $key)) }}
+                                    </div>
+                                    <div class="text-gray-600 dark:text-gray-400">
+                                        {{ $value }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                
             </div>
         </div>
     </div>

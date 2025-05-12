@@ -5,12 +5,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  {{-- <title>Computer Nostalgia Navbar</title> --}}
-  <!-- Add Google Fonts -->
-  @yield('meta')
+ 
+
+    <!-- Dynamic Meta Tags for SEO -->
+  <title>@yield('meta_title') | {{$gs->name}}</title>
+  <meta name="description" content="@yield('meta_description', $gs->slogan)">
+  
+  <link rel="canonical" href="@yield('canonical', url()->current())">
+
+  @hasSection('meta')
+    @yield('meta')
+  @else
+   <meta name="keywords" content="@yield('meta_keywords', $gs->keywords ?? '')">
+  @endif
+
+ 
+
+
+
   <style>
         :root {
             --tw-bg-opacity: 1;
+            --color-bg-alt: 249, 250, 251;
+            --color-border: 229, 231, 235;
+            --color-primary: 124, 58, 237;
+            --color-primary-light: 139, 92, 246;
+            --color-text: 17, 24, 39;
+            --color-text-light: 107, 114, 128;
+        }
+
+        .dark {
+            --color-bg-alt: 31, 41, 55;
+            --color-border: 55, 65, 81;
+            --color-primary: 139, 92, 246;
+            --color-primary-light: 167, 139, 250;
+            --color-text: 229, 231, 235;
+            --color-text-light: 156, 163, 175;
         }
     </style>
  <!-- Font Awesome -->
@@ -77,6 +107,7 @@
 
   <!-- Swiper JS -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+
 
   <!-- Theme Toggle Script -->
   <script>

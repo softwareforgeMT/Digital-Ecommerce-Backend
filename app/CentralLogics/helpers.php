@@ -166,68 +166,56 @@ class Helpers
       }
     }
 
-
-
-    public static function setCurrency($price) {
-        $gs = GeneralSetting::findOrFail(1);
-        $price = number_format($price,2);
-        if($gs->currency_format == 1){
-            return '$'.$price;
-        }
-        else{
-            return $price.'$';
-        }
-    }
-    public static function offerPrice($price) {
-        $gs = GeneralSetting::findOrFail(1);
-        // $price = number_format($price,2);
-        if($gs->currency_format == 1){
-            return '$'.$price;
-        }
-        else{
-            return $price.'$';
-        }
-    }
-    public static function generalVariables(){
-        return [
-                
-                'currency_symbol'=>'$',
-                'currency'=>'USD',
-            ];
-    }
-
-    public static function getPrice($price,$number_format='') {
-        if($number_format==1){
-          return $price=number_format($price,2);
-        }else{
-          return $price=round($price,2);  
-        }
-        
-    }
     public static function setInterval($interval) {
        return ucfirst($interval);
     }
+
+
+
+    public static function setCurrency($price) {
+         return self::generalVariables('currency_symbol') . self::getPrice($price);
+    }
+    public static function formatPrice($price) {
+         return self::setCurrency($price);
+    }
     
-
-
-
-    public static function formatPrice($price)
-    {
-        $gs = GeneralSetting::first();
-        $price = number_format($price, 2);
-        
-        return $gs->currency_format == 1 ? "$".$price : $price."$";
-    }
-
-    public static function getCurrency()
-    {
-        return GeneralSetting::first()->currency ?? 'USD';
-    }
-
+    
     public static function getCurrencySymbol()
     {
-        return '$';
+       return self::generalVariables('currency_symbol');
     }
+    public static function getCurrency()
+    {
+       return self::generalVariables('currency');
+    }
+
+    public static function getPrice($price, $number_format = 1)
+    {
+        if ($number_format == 1) {
+            // Display: "1400.00" (no thousands separator)
+            return number_format((float)$price, 2, '.', '');
+        }
+
+        // Backend/DB: raw float rounded to 2 decimal places (no string)
+        return round((float)$price, 2);
+    }
+
+    public static function generalVariables($key = null)
+    {
+        $vars = [
+            'currency_symbol' => '£',
+            'currency' => 'GBP',
+        ];
+
+
+        if ($key) {
+            return $vars[$key] ?? null; // return value if key exists, else null
+        }
+
+        return $vars; // if no key passed, return full array
+    }
+
+    
 
 
     public static function getTaxRate()

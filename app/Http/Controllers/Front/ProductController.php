@@ -66,6 +66,7 @@ class ProductController extends Controller
 
         $products = $query->paginate(12);
         $categories = ProductCategory::active()->withCount('products')->get();
+      
 
         // Get min and max prices for filter
         $priceRange = Product::selectRaw('MIN(price) as min_price, MAX(price) as max_price')->first();

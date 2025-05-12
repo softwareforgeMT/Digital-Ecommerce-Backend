@@ -1,7 +1,10 @@
-@extends('layouts.master-without-nav')
-@section('title')
-    @lang('translation.signin')
+@extends('front.layouts.app')
+
+@section('meta')
+    <title>Login to Your Account - {{ $gs->name }}</title>
+    <meta name="description" content="Sign in to access your account and manage your orders, downloads, and preferences.">
 @endsection
+
 @section('content')
     <div class="auth-page-wrapper pt-5">
         <!-- auth page bg -->

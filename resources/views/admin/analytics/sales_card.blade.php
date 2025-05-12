@@ -5,7 +5,7 @@
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <p class="text-uppercase fw-medium text-muted mb-0">{{ $title ?? 'Total Sales' }}</p>
-                    <h4 class="fs-22 fw-semibold mb-0">{{ isset($stats['total_sales']) ? Helpers::formatPrice($stats['total_sales']) : '$0.00' }}</h4>
+                    <h4 class="fs-22 fw-semibold mb-0">{{ isset($stats['total_sales']) ? Helpers::setCurrency($stats['total_sales']) : '$0.00' }}</h4>
                     <p class="text-muted mt-2 mb-0">
                         <span class="badge bg-light text-success mb-0">
                             <i class="ri-shopping-cart-line align-middle"></i>

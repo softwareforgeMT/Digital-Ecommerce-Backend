@@ -1,8 +1,10 @@
 @extends('front.layouts.app')
 
+@section('meta_title', $post->title )
+@section('meta_description', $post->summary ?? Str::limit(strip_tags($post->content), 160)  )
+
+
 @section('meta')
-    <title>{{ $post->title }} - {{ config('app.name') }}</title>
-    <meta name="description" content="{{ $post->summary ?? Str::limit(strip_tags($post->content), 160) }}">
     <meta name="keywords" content="{{ $post->formatted_tags ?? 'blog, article' }}">
     
     <!-- Open Graph Tags -->

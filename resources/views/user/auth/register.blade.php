@@ -1,5 +1,5 @@
 @extends('front.layouts.app')
-@section('title') Sign Up @endsection
+@section('meta_title') Sign Up @endsection
 
 @section('content')
 <div class="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">

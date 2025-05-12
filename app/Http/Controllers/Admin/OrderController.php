@@ -41,6 +41,7 @@ class OrderController extends Controller
         }
 
         return DataTables::eloquent($query)
+        ->addIndexColumn()
             ->addColumn('action', function(Order $data) {
                 return '<div class="btn-group mb-1">
                     <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">

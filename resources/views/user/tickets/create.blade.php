@@ -1,6 +1,6 @@
 @extends('front.layouts.app')
 
-@section('title', 'Create Support Ticket')
+@section('meta_title', 'Create Support Ticket')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">

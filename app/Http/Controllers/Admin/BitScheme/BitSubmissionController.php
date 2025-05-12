@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use DataTables;
+use Carbon\Carbon;
 
 class BitSubmissionController extends Controller
 {
@@ -32,6 +33,7 @@ class BitSubmissionController extends Controller
                 ->orderBy('created_at', 'desc');
         
         return DataTables::of($datas)
+            ->addIndexColumn()
             ->addColumn('user', function(BitSubmission $data) {
                 return $data->user ? $data->user->name : 'N/A';
             })
@@ -83,7 +85,20 @@ class BitSubmissionController extends Controller
     public function show($id)
     {
         $data = BitSubmission::with(['user', 'task'])->findOrFail($id);
-        return view('admin.bits-scheme.submissions.show', compact('data'));
+        
+        // Count submissions from this user for this task in the last 30 days
+        $userRecentSubmissionsCount = BitSubmission::where('user_id', $data->user_id)
+            ->where('bit_task_id', $data->bit_task_id)
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->count();
+        
+        // Count approved submissions from this user for this task
+        $userApprovedCount = BitSubmission::where('user_id', $data->user_id)
+            ->where('bit_task_id', $data->bit_task_id)
+            ->where('status', 'approved')
+            ->count();
+        
+        return view('admin.bits-scheme.submissions.show', compact('data', 'userRecentSubmissionsCount', 'userApprovedCount'));
     }
     
     public function review(Request $request, $id)

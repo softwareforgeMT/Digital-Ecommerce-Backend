@@ -7,10 +7,17 @@
       <!-- Logo -->
       <div class="flex items-center">
         <a href="/" class="flex items-center">
+          <!-- Light mode logo (hidden in dark mode) -->
           <img
-            src="{{asset('assets/front/images/logo.png')}}"
-            alt="Computer Nostalgia Logo"
-            class="h-10 md:h-14" />
+            src="{{ asset('assets/logo/logo-light.png') }}"
+            alt="{{ $gs->name }} Logo"
+            class="h-10 md:h-14 block dark:hidden" />
+          
+          <!-- Dark mode logo (hidden in light mode) -->
+          <img
+            src="{{ asset('assets/logo/logo-dark.png') }}"
+            alt="{{ $gs->name }} Logo"
+            class="h-10 md:h-16 hidden dark:block" />
         </a>
       </div>
 
@@ -26,7 +33,7 @@
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">NostalgiaBase</a>
         <a href="{{ route('front.services.index') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Services</a>
-        <a href="{{ route('user.bit-tasks.index') }}" 
+        <a href="{{ route('front.bit.ledger') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Bit Logs</a>
       </div>
 
@@ -108,7 +115,7 @@
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                                     <span>{{ $item->quantity }}</span>
                                     <span class="mx-1">x</span>
-                                    <span>{{ Helpers::formatPrice($item->price) }}</span>
+                                    <span>{{ Helpers::setCurrency($item->price) }}</span>
                                 </div>
                             </div>
                             <button class="text-gray-400 hover:text-red-500" 
@@ -126,7 +133,7 @@
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                     <div class="flex justify-between mb-4 text-gray-900 dark:text-white">
                         <span>Subtotal</span>
-                        <span>{{ Helpers::formatPrice($CartLogics::getOrCreateCart()->subtotal) }}</span>
+                        <span>{{ Helpers::setCurrency($CartLogics::getOrCreateCart()->subtotal) }}</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -218,7 +225,7 @@
         <a href="{{ route('front.products.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Store</a>
         <a href="{{ route('front.nostalgia.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">NostalgiaBase</a>
         <a href="{{ route('front.services.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Services</a>
-        <a href="{{ route('user.bit-tasks.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Bit Logs</a>
+        <a href="{{ route('front.bit.ledger') }}" class="text-gray-800 dark:text-gray-300 font-medium">Bit Logs</a>
 
         @auth
           <!-- Mobile User Menu -->

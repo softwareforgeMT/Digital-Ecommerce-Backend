@@ -1,10 +1,10 @@
 @extends('front.layouts.app')
 
-@section('meta')
-    <title>{{ $product->name }} - {{ config('app.name') }}</title>
-    <meta name="description" content="{{ Str::limit(strip_tags($product->description), 160) }}">
-    <link rel="canonical" href="{{ url()->current() }}">
-@endsection
+
+@section('meta_title', $product->name )
+@section('meta_description', Str::limit(strip_tags($product->description), 160)  )
+
+
 
 @section('content')
     <!-- Breadcrumb -->
@@ -47,7 +47,7 @@
 
             <!-- Product Info -->
             <div class="lg:w-1/2">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ $product->name }}</h1>
+                <h1 id="product--price" class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ $product->name }}</h1>
                 
                 <!-- Product Meta -->
                 <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
@@ -79,15 +79,88 @@
 
                 <!-- Price Section -->
                 <div class="mb-6">
-                    <div class="price-display">
-                        @if($product->discount_price)
-                            <span class="text-3xl font-bold text-red-500">${{ number_format($product->discount_price, 2) }}</span>
-                            <span class="text-xl text-gray-500 line-through ml-2">${{ number_format($product->price, 2) }}</span>
-                        @else
-                            <span class="text-3xl font-bold text-gray-900 dark:text-white">${{ number_format($product->price, 2) }}</span>
-                        @endif
-                    </div>
+                    @if($product->max_bits_allowed > 0)
+                        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+                            <!-- Maximum Bits Price -->
+                            <div class="mb-3">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                    </svg>
+                                    Save up to {{ $product->getBitsSavingsPercentage() }}% with bits
+                                </span>
+                            </div>
+                            
+                            <!-- Bit-discounted price -->
+                            <div class="mb-2">
+                                <span class="text-4xl font-bold text-green-600 dark:text-green-400">
+                                    {{ Helpers::setCurrency($product->getBitsDiscountedPrice()) }}
+                                </span>
+                                <span class="text-sm text-green-600 dark:text-green-400 ml-1">with max bits</span>
+                            </div>
+                            
+                            <!-- Regular price -->
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                Regular price:
+                                <span class="text-gray-900 dark:text-gray-300">{{ Helpers::setCurrency($product->price) }}</span>
+                            </div>
+                            
+                            <div class="mt-2 text-xs text-gray-500">
+                                *Apply up to {{ $product->max_bits_allowed }} bits ({{ Helpers::setCurrency($product->max_bits_allowed * $gs->bit_value) }} value)
+                            </div>
+                        </div>
+                    @else
+                        <div class="price-display">
+                            <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ Helpers::setCurrency($product->price) }}</span>
+                        </div>
+                    @endif
                 </div>
+
+                <div class="mb-6">
+                    <a href="{{ route('front.help.warranty') }}" 
+                       target="_blank"
+                       class="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        View Warranty Terms
+                    </a>
+                </div>
+
+                 <!-- Bits Discount Section -->
+                @if($product->max_bits_allowed > 0 && auth()->check() && auth()->user()->bit_balance > 0)
+                    <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-100 dark:border-purple-800">
+                        <h3 class="text-md font-medium text-purple-800 dark:text-purple-300 mb-2">Use Your Bits for Discount</h3>
+                        
+                        <div class="flex items-center justify-between text-sm text-purple-700 dark:text-purple-400 mb-2">
+                            <span>0 Bits</span>
+                            <span>{{ min(auth()->user()->bit_balance, $product->max_bits_allowed) }} Bits</span>
+                        </div>
+                        
+                        <input type="range" 
+                               id="bitSlider" 
+                               min="0" 
+                               max="{{ min(auth()->user()->bit_balance, $product->max_bits_allowed) }}" 
+                               value="0" 
+                               class="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer dark:bg-purple-700">
+                        
+                        <div class="flex items-center justify-between mt-3">
+                            <div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Your bits: </span>
+                                <span id="usedBits" class="font-semibold text-purple-700 dark:text-purple-400">0</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400"> / {{ auth()->user()->bit_balance }}</span>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Final price: </span>
+                                <span id="finalPrice" class="font-semibold text-green-600 dark:text-green-400">{{ Helpers::setCurrency($product->price) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            * Each bit reduces the price by {{ Helpers::setCurrency($gs->bit_value) }}
+                        </div>
+                    </div>
+                @endif
+
+                
 
                 <!-- Product Options -->
                 @if($product->variations)
@@ -110,8 +183,7 @@
                                                        value="{{ $value['value'] }}"
                                                        class="hidden option-input"
                                                        data-option-type="{{ $variation['option_type_id'] }}"
-                                                       data-additional-price="{{ $value['additional_price'] }}"
-                                                       onclick="this.checked = !this._checked; this._checked = this.checked; handleOptionChange(this)">
+                                                       data-additional-price="{{ $value['additional_price'] }}">
                                                 <span class="px-4 py-2 rounded-lg border-2 border-gray-200 
                                                            hover:border-purple-500 inline-block option-value
                                                            dark:border-gray-600 dark:hover:border-purple-500">
@@ -143,13 +215,13 @@
                 </button>
 
                 <!-- Tags -->
-                @if($product->tags)
+                {{-- @if($product->tags)
                     <div class="flex flex-wrap gap-3 mb-6">
                         @foreach(json_decode($product->tags) as $tag)
                             <x-tag>{{ $tag }}</x-tag>
                         @endforeach
                     </div>
-                @endif
+                @endif --}}
             </div>
         </div>
 
@@ -312,7 +384,7 @@
                                 @empty
                                     <div class="text-center py-12">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2h-5l-5 5v-5z" />
                                         </svg>
                                         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No reviews yet</h3>
                                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Be the first to review this product</p>
@@ -347,10 +419,10 @@
                                 <h3 class="font-semibold text-gray-900 dark:text-white mb-2">{{ $relatedProduct->name }}</h3>
                                 <div class="flex items-center justify-between">
                                     @if($relatedProduct->discount_price)
-                                        <span class="text-red-500 font-bold">${{ number_format($relatedProduct->discount_price, 2) }}</span>
-                                        <span class="text-gray-500 line-through text-sm">${{ number_format($relatedProduct->price, 2) }}</span>
+                                        <span class="text-red-500 font-bold">{{ Helpers::setCurrency($relatedProduct->discount_price) }}</span>
+                                        <span class="text-gray-500 line-through text-sm">{{ Helpers::setCurrency($relatedProduct->price) }}</span>
                                     @else
-                                        <span class="text-purple-600 dark:text-purple-400 font-bold">${{ number_format($relatedProduct->price, 2) }}</span>
+                                        <span class="text-purple-600 dark:text-purple-400 font-bold">{{ Helpers::setCurrency($relatedProduct->price) }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -389,42 +461,81 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize checked state for radio buttons
+    // Setup option selection system properly
     document.querySelectorAll('.option-input').forEach(input => {
-        input._checked = false;
+        // Remove the existing click handler that's causing issues
+        input.removeAttribute('onclick');
+        
+        // Set up a new clean click handler on the label instead
+        input.closest('.option-value-label').addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default radio button behavior
+            
+            const radioInput = this.querySelector('.option-input');
+            const optionTypeId = radioInput.dataset.optionType;
+            
+            // If this option is already checked, deselect it
+            if (radioInput.checked) {
+                radioInput.checked = false;
+                this.querySelector('.option-value').classList.remove('selected-option', 'border-purple-500', 'bg-purple-50', 'text-purple-600');
+            } else {
+                // Uncheck all other options in this variation group
+                document.querySelectorAll(`.option-input[data-option-type="${optionTypeId}"]`).forEach(groupInput => {
+                    groupInput.checked = false;
+                    groupInput.closest('.option-value-label').querySelector('.option-value').classList.remove(
+                        'selected-option', 'border-purple-500', 'bg-purple-50', 'text-purple-600'
+                    );
+                });
+                
+                // Check this option
+                radioInput.checked = true;
+                this.querySelector('.option-value').classList.add('selected-option', 'border-purple-500', 'bg-purple-50', 'text-purple-600');
+            }
+            
+            // Update the total price
+            updatePrice();
+        });
     });
 });
 
-function handleOptionChange(input) {
-    const optionLabel = input.closest('.option-value-label').querySelector('.option-value');
-    
-    if (input._checked) {
-        optionLabel.classList.add('selected-option', 'border-purple-500', 'bg-purple-50', 'text-purple-600');
-    } else {
-        optionLabel.classList.remove('selected-option', 'border-purple-500', 'bg-purple-50', 'text-purple-600');
-    }
-
-    updatePrice();
-}
+// Global variable to track current product price (base + add-ons)
+let currentProductPrice = {{ $product->discount_price ?: $product->price }};
 
 function updatePrice() {
-    const selectedOptions = {};
     let additionalPrice = 0;
 
-    document.querySelectorAll('.option-input').forEach(input => {
-        if (input._checked) {
-            selectedOptions[input.dataset.optionType] = input.value;
-            additionalPrice += parseFloat(input.dataset.additionalPrice || 0);
-        }
+    document.querySelectorAll('.option-input:checked').forEach(input => {
+        additionalPrice += parseFloat(input.dataset.additionalPrice || 0);
     });
 
     const basePrice = {{ $product->discount_price ?: $product->price }};
     const totalPrice = basePrice + additionalPrice;
+    
+    // Update the global price tracker
+    currentProductPrice = totalPrice;
 
     document.querySelector('.price-display').innerHTML = `
         <span class="text-3xl font-bold text-gray-900 dark:text-white">$${totalPrice.toFixed(2)}</span>
         ${basePrice !== totalPrice ? `<span class="text-sm text-gray-500 ml-2">(Base price: $${basePrice.toFixed(2)})</span>` : ''}
     `;
+    
+    // Update bits slider calculation if it exists
+    updateBitsCalculation();
+}
+
+// Function to update the bits discount calculation based on current product price
+function updateBitsCalculation() {
+    const bitSlider = document.getElementById('bitSlider');
+    if (bitSlider) {
+        const bitsUsed = parseInt(bitSlider.value);
+        const bitValue = {{ $gs->bit_value ?? 0 }};
+        const discount = bitsUsed * bitValue;
+        const finalPrice = Math.max(0, currentProductPrice - discount).toFixed(2);
+        
+        const finalPriceElement = document.getElementById('finalPrice');
+        if (finalPriceElement) {
+            finalPriceElement.textContent = '$' + finalPrice;
+        }
+    }
 }
 
 // Simple direct tab switching with plain JavaScript
@@ -465,11 +576,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function addToCart() {
     const options = {};
-    document.querySelectorAll('.option-input').forEach(input => {
-        if (input._checked) {
-            options[input.dataset.optionType] = input.value;
-        }
+    document.querySelectorAll('.option-input:checked').forEach(input => {
+        options[input.dataset.optionType] = input.value;
     });
+    
+    // Get bits used if the slider exists
+    let bitsUsed = 0;
+    const bitSlider = document.getElementById('bitSlider');
+    if (bitSlider) {
+        bitsUsed = parseInt(bitSlider.value || 0);
+    }
 
     fetch('{{ route('front.cart.add') }}', {
         method: 'POST',
@@ -480,39 +596,73 @@ function addToCart() {
         body: JSON.stringify({
             product_id: {{ $product->id }},
             quantity: 1,
-            options: options
+            options: options,
+            bits_used: bitsUsed
         })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            // Update cart count in header
-            document.getElementById('cart-count').textContent = data.cart_count;
-            
-            // Show success message
-            const toast = document.createElement('div');
-            toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            toast.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Added to cart successfully!</span>
-                </div>
-            `;
-            document.body.appendChild(toast);
-            
-            // Remove toast after 3 seconds
+    if (data.success) {
+        // Update cart count
+        document.getElementById('cart-count').textContent = data.cart_count;
+
+        // Show Toastr message
+       
+
+        // Create custom toast
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 opacity-100 transition-opacity duration-500';
+        toast.innerHTML = `
+            <div class="flex items-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                <span>Added to cart successfully!</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        // Fade out after 1 second
+        setTimeout(() => {
+            toast.classList.remove('opacity-100');
+            toast.classList.add('opacity-0');
+
+            // Remove from DOM after fade out (0.5s later)
             setTimeout(() => {
                 toast.remove();
-            }, 3000);
+
+                // 🔥 Redirect after fade out
+                window.location.href = "{{ route('front.cart.index') }}";
+
+            }, 500);
+        }, 1000);
         }
     })
-    .catch(error => {
+   .catch(error => {
         console.error('Error:', error);
     });
 }
+
+// Bit slider functionality
+const bitSlider = document.getElementById('bitSlider');
+if (bitSlider) {
+    const bitValue = {{ $gs->bit_value ?? 0 }};
+    const usedBitsElement = document.getElementById('usedBits');
+    const finalPriceElement = document.getElementById('finalPrice');
+    const bitsUsedInput = document.getElementById('bitsUsed');
+    
+    bitSlider.addEventListener('input', function() {
+        const bitsUsed = parseInt(this.value);
+        const discount = bitsUsed * bitValue;
+        // Use the global currentProductPrice instead of fixed product price
+        const finalPrice = Math.max(0, currentProductPrice - discount).toFixed(2);
+        
+        usedBitsElement.textContent = bitsUsed;
+        finalPriceElement.textContent = '$' + finalPrice;
+        if (bitsUsedInput) {
+            bitsUsedInput.value = bitsUsed;
+        }
+    });
+}
 </script>
-
-
 
 <style>
     .option-input:checked + .option-value {

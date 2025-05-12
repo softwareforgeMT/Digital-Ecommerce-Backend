@@ -1,5 +1,6 @@
 @extends('front.layouts.app')
 
+@section('meta_title', 'Orders')
 @section('content')
 <div class="container mx-auto px-4 py-12">
     <div class="flex flex-col lg:flex-row gap-8">
@@ -52,7 +53,7 @@
                                             @endif">
                                             {{ ucfirst($order->status) }}
                                         </span>
-                                        <p class="mt-2 font-medium text-lg dark:text-white">{{ Helpers::formatPrice($order->total) }}</p>
+                                        <p class="mt-2 font-medium text-lg dark:text-white">{{ Helpers::setCurrency($order->total) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -70,7 +71,7 @@
                                             <div class="flex-1">
                                                 <h4 class="font-medium dark:text-white">{{ $item->product_name }}</h4>
                                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    Qty: {{ $item->quantity }} × {{ Helpers::formatPrice($item->price) }}
+                                                    Qty: {{ $item->quantity }} × {{ Helpers::setCurrency($item->price) }}
                                                 </p>
                                                 @if($variations = $item->getFormattedVariations())
                                                     <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -86,7 +87,7 @@
                                             </div>
                                             <div class="text-right">
                                                 <span class="font-medium dark:text-white">
-                                                    {{ Helpers::formatPrice($item->price * $item->quantity) }}
+                                                    {{ Helpers::setCurrency($item->price * $item->quantity) }}
                                                 </span>
                                             </div>
                                         </div>

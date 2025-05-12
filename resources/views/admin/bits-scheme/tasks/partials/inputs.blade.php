@@ -48,7 +48,7 @@
     </div>
 </div>
 
-{{-- <div class="row">
+<div class="row">
     <div class="col-md-6">
         <div class="mb-3">
             <label for="required_proof" class="form-label">Required Proof</label>
@@ -62,7 +62,7 @@
         </div>
     </div>
     
-    <div class="col-md-6">
+{{--     <div class="col-md-6">
         <div class="mb-3">
             <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
             <select id="status" name="status" class="form-select @error('status') is-invalid @enderror" required>
@@ -73,5 +73,5 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-    </div>
-</div> --}}
+    </div> --}}
+</div>

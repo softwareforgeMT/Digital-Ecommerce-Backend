@@ -247,7 +247,7 @@ class AdminController extends Controller
             $customerName = $order->user ? $order->user->name : 'Guest';
             $activity[] = [
                 'type' => 'order',
-                'message' => "New order <strong>#$order->order_number</strong> placed by <strong>$customerName</strong> for <strong>" . Helpers::formatPrice($order->total) . "</strong>",
+                'message' => "New order <strong>#$order->order_number</strong> placed by <strong>$customerName</strong> for <strong>" . Helpers::setCurrency($order->total) . "</strong>",
                 'time' => $order->created_at->diffForHumans()
             ];
         }
@@ -386,6 +386,9 @@ class AdminController extends Controller
 
         $data->name = $request->name;
         $data->slogan = $request->slogan;
+        $data->from_name = $request->name;
+        $data->from_email = $request->from_email;
+        
         $data->bit_value = $request->bit_value;
         $data->update();
 

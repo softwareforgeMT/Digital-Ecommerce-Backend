@@ -1,10 +1,9 @@
 @extends('front.layouts.app')
 
-@section('meta')
-    <title>Nostalgia Collection - {{ config('app.name') }}</title>
-    <meta name="description" content="Explore our collection of nostalgic computer and gaming items">
-    <link rel="canonical" href="{{ url()->current() }}">
-@endsection
+
+@section('meta_title', "Nostalgia Collection" )
+@section('meta_description', "Explore our collection of nostalgic computer and gaming items"  )
+
 
 @section('content')
     <!-- Banner Section -->

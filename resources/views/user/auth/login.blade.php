@@ -1,5 +1,5 @@
 @extends('front.layouts.app')
-@section('title') Sign In @endsection
+@section('meta_title') Sign In @endsection
 
 @section('content')
 <div class="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -107,6 +107,18 @@
                             <span>Continue with Google</span>
                         </a>
                     @endif
+                    
+                   <a href="{{ url('oauth/discord') }}" 
+                       class="mt-4 w-full flex items-center justify-center space-x-3 py-3 px-4 
+                              bg-white/5 hover:bg-white/10 
+                              border border-blue-500/20 hover:border-blue-500/30 
+                              backdrop-blur-sm rounded-lg transition-all duration-300 
+                              hover:-translate-y-1 hover:shadow-lg
+                              text-gray-700 dark:text-gray-300">
+                        <i class="fab fa-discord text-indigo-500 w-5 h-5"></i>
+                        <span>Continue with Discord</span>
+                    </a>
+                   
                 </div>
 
                 <!-- Sign Up Link -->

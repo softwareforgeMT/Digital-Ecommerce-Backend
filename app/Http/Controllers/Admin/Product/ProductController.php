@@ -51,6 +51,7 @@ class ProductController extends Controller
             'tags' => 'nullable|string',
             'checks' => 'nullable|array',
             'checks.*' => 'in:featured,postage_eligible',
+            'max_bits_allowed' => 'nullable|integer|min:0',
             
             // Option validations
             'option_types' => 'nullable|array',
@@ -200,7 +201,8 @@ class ProductController extends Controller
             $product->description = $request->description;
             $product->price = $request->price;
             $product->quantity = $request->quantity;
-            $product->status = $request->status;
+            
+            $product->max_bits_allowed = $request->input('max_bits_allowed', 10); // Add this line with default 10
 
             // Handle gallery and main image
             $galleryData = $this->handleGalleryUpload($request, $isUpdate ? $product : null);
@@ -260,7 +262,7 @@ class ProductController extends Controller
             }
 
             $product->save();
-
+     
             DB::commit();
             
             return [
@@ -287,7 +289,6 @@ class ProductController extends Controller
         }
 
         $result = $this->handleRequest($request);
-
         return response()->json([
             'success' => true,
             'msg' => "Data has been saved successfully!",

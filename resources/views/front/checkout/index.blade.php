@@ -1,5 +1,5 @@
 @extends('front.layouts.app')
-
+@section('meta_title', "Checkout" )
 @section('content')
 <div class="bg-gray-50 dark:bg-gray-900 py-12 transition-colors duration-300">
     <div class="container mx-auto px-4 lg:px-8">
@@ -117,6 +117,31 @@
                             <div id="payment-details" class="mt-6">
                                 <!-- Stripe/PayPal form fields -->
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Add before the submit button -->
+                    <div class="mb-6">
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                            <div class="flex items-center mb-4">
+                                <input type="checkbox" 
+                                       id="warranty_confirmed" 
+                                       name="warranty_confirmed" 
+                                       required
+                                       class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
+                                <label for="warranty_confirmed" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                    I have read and understand the 
+                                    <a href="{{ route('front.help.warranty') }}" 
+                                       target="_blank"
+                                       class="text-purple-600 hover:text-purple-700 underline">
+                                        warranty terms
+                                    </a>
+                                    and agree to them.
+                                </label>
+                            </div>
+                            @error('warranty_confirmed')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </form>

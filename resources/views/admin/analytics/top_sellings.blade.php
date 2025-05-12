@@ -121,7 +121,7 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <span class="fw-semibold">{{ $product->total_quantity }} sold</span>
-                                                    <p class="text-success mb-0">{{ Helpers::formatPrice($product->total_revenue) }}</p>
+                                                    <p class="text-success mb-0">{{ Helpers::setCurrency($product->total_revenue) }}</p>
                                                 </td>
                                             </tr>
                                         @endforeach

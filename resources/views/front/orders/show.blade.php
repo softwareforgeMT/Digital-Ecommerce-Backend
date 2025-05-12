@@ -44,8 +44,8 @@
                                     @endif
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-medium dark:text-white">{{ Helpers::formatPrice($item->price) }} × {{ $item->quantity }}</p>
-                                    <p class="text-gray-600 dark:text-gray-400">{{ Helpers::formatPrice($item->price * $item->quantity) }}</p>
+                                    <p class="font-medium dark:text-white">{{ Helpers::setCurrency($item->price) }} × {{ $item->quantity }}</p>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ Helpers::setCurrency($item->price * $item->quantity) }}</p>
                                 </div>
                             </div>
                         @endforeach

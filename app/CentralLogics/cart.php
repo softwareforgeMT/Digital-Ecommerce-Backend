@@ -65,9 +65,9 @@ class CartLogics
         $total = $subtotal + $tax - $cart->discount;
 
         return [
-            'subtotal' => round($subtotal, 2),
-            'tax' => round($tax, 2),
-            'total' => round($total, 2),
+            'subtotal' => Helpers::getPrice($subtotal),
+            'tax' => Helpers::getPrice($tax),
+            'total' => Helpers::getPrice($total),
         ];
     }
 
@@ -180,11 +180,11 @@ class CartLogics
         $total = $subtotal + $tax + $shipping - $discount;
 
         $cart->update([
-            'subtotal' => round($subtotal, 2),
-            'tax' => round($tax, 2),
-            'shipping' => round($shipping, 2),
-            'discount' => round($discount, 2),
-            'total' => round($total, 2),
+            'subtotal' => Helpers::getPrice($subtotal),
+            'tax' => Helpers::getPrice($tax),
+            'shipping' => Helpers::getPrice($shipping),
+            'discount' => Helpers::getPrice($discount),
+            'total' => Helpers::getPrice($total),
             'total_items' => $totalItems
         ]);
 

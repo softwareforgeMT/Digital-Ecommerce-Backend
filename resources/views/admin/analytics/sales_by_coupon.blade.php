@@ -15,14 +15,14 @@
                     <p class="fw-medium mb-0"><i class="ri-checkbox-blank-circle-fill text-success align-middle me-2"></i> Coupon</p>
                     <div>
                         <span class="text-muted pe-5">{{$salesByCoupon['couponOrders']}}</span>
-                        <span class="text-success fw-medium fs-12">{{Helpers::getPrice($salesByCoupon['couponOrdersPercentage'])}}%</span>
+                        <span class="text-success fw-medium fs-12">{{Helpers::setCurrency($salesByCoupon['couponOrdersPercentage'])}}%</span>
                     </div>
                 </div><!-- end -->
                 <div class="d-flex justify-content-between border-bottom border-bottom-dashed py-2">
                     <p class="fw-medium mb-0"><i class="ri-checkbox-blank-circle-fill text-info align-middle me-2"></i> Without Coupon</p>
                     <div>
                         <span class="text-muted pe-5">{{$salesByCoupon['withoutCouponOrders']}} </span>
-                        <span class="text-success fw-medium fs-12">{{Helpers::getPrice($salesByCoupon['withoutCouponOrdersPercentage'])}}%</span>
+                        <span class="text-success fw-medium fs-12">{{Helpers::setCurrency($salesByCoupon['withoutCouponOrdersPercentage'])}}%</span>
                     </div>
                 </div><!-- end -->
             </div>
@@ -56,7 +56,7 @@
                                     </div>
                                 </td>
                                 <td>{{ $coupon->uses }}</td>
-                                <td>{{ Helpers::formatPrice($coupon->total_discount) }}</td>
+                                <td>{{ Helpers::setCurrency($coupon->total_discount) }}</td>
                             </tr>
                         @endforeach
                     </tbody>

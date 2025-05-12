@@ -1,32 +1,32 @@
 @extends('front.layouts.app')
+
 @section('css')
 <link rel="stylesheet" href="{{ asset('assets/css/front/pages/co-detail.min.css') }}" />
 @endsection
-@section('content')
-       <!-- auth-page wrapper -->
-       <div class="auth-page-wrapper py-5 d-flex justify-content-center align-items-center min-vh-100">
 
-        <!-- auth-page content -->
-        <div class="auth-page-content overflow-hidden p-0">
-            <div class="container-fluid">
-                <div class="row justify-content-center">
-                    <div class="col-xl-4 text-center">
-                        <div class="error-500 position-relative">
-                            <img src="{{ URL::asset('assets/images/error500.png') }}" alt="" class="img-fluid error-500-img error-img" />
-                            <h1 class="title text-muted">500</h1>
-                        </div>
-                        <div>
-                            <h4>Internal Server Error!</h4>
-                            <p class="text-muted w-75 mx-auto">Server Error 500. We're not exactly sure what happened, but our servers say something is wrong.</p>
-                           <a href="{{route('front.index')}}" class="btn g2z-btn-primary"><i class="mdi mdi-home me-1"></i>Back to home</a>
-                        </div>
-                    </div><!-- end col-->
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
+@section('meta')
+    <title>Server Error - {{ $gs->name }}</title>
+    <meta name="description" content="We're experiencing some technical difficulties. Please try again later.">
+@endsection
+
+@section('content')
+<div class="container mx-auto px-4 py-16">
+    <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <div class="mb-8">
+            <h1 class="text-9xl font-bold text-gray-200 dark:text-gray-800">500</h1>
         </div>
-        <!-- end auth-page content -->
+        <h2 class="text-3xl font-semibold mb-4 text-gray-800 dark:text-white">Internal Server Error</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
+            We're experiencing some technical difficulties right now. Please try again later or contact our support team if the problem persists.
+        </p>
+        <div class="flex gap-4">
+            <a href="{{ route('front.index') }}" class="bg-primary-gradient text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-300">
+                Back to Homepage
+            </a>
+            <a href="mailto:support@{{ $gs->site_email }}" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-6 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300">
+                Contact Support
+            </a>
+        </div>
     </div>
-    <!-- end auth-page-wrapper -->
+</div>
 @endsection

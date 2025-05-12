@@ -1,10 +1,8 @@
 @extends('front.layouts.app')
 
-@section('meta')
-    <title>{{ $service->title }} - {{ config('app.name') }}</title>
-    <meta name="description" content="{{ $service->summary ?? Str::limit(strip_tags($service->content), 160) }}">
-    <link rel="canonical" href="{{ url()->current() }}">
-@endsection
+@section('meta_title', $service->title )
+@section('meta_description', $service->summary ?? Str::limit(strip_tags($service->content), 160)  )
+
 
 @section('content')
     <!-- Banner Section -->
@@ -25,6 +23,8 @@
     </section>
 
     <div class="container mx-auto px-4 py-12">
+       
+        
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Main Content -->
             <div class="lg:w-2/3">
@@ -56,41 +56,93 @@
             </div>
 
             <!-- Sidebar -->
-            <div class="lg:w-1/3">
+            <div class="lg:w-1/3 space-y-8">
                 <!-- Service Packages -->
                 @if($service->items)
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Service Packages</h3>
-                        <form id="quoteForm" class="space-y-4">
-                            @foreach(json_decode($service->items, true) as $key => $package)
-                                <label class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-purple-500 transition-colors">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center">
-                                            <input type="radio" name="selected_package" value="{{ $key }}" 
-                                                   class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500">
-                                            <div class="ml-3">
-                                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ $package['label'] }}</h4>
-                                                <span class="text-purple-600 dark:text-purple-400 font-bold">
-                                                    ${{ number_format($package['price'], 2) }}
-                                                </span>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
+                            Service Packages
+                        </h3>
+                        <form id="quoteForm" action="{{ route('front.services.quote') }}" method="POST" class="space-y-6">
+                            @csrf
+                            @include('includes.alerts')
+                            <input type="hidden" name="service_id" value="{{ $service->id }}">
+                            <input type="hidden" name="service_title" value="{{ $service->title }}">
+                            
+                            <div class="space-y-4">
+                                @foreach(json_decode($service->items, true) as $key => $package)
+                                    <label class="relative block p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-purple-500 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <input type="radio" name="selected_package" value="{{ $key }}" required
+                                                       class="w-5 h-5 text-purple-600 border-gray-300 focus:ring-purple-500">
+                                                <div class="ml-4">
+                                                    <h4 class="font-semibold text-gray-900 dark:text-white">{{ $package['label'] }}</h4>
+                                                    <span class="text-purple-600 dark:text-purple-400 font-bold text-lg">
+                                                        {{ Helpers::setCurrency($package['price']) }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </label>
-                            @endforeach
+                                    </label>
+                                @endforeach
+                            </div>
+                            
+                            <div class="space-y-6 mt-8">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Full Name
+                                    </label>
+                                    <input type="text" id="name" name="name" required 
+                                           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 
+                                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
+                                                  focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Email Address
+                                    </label>
+                                    <input type="email" id="email" name="email" required 
+                                           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 
+                                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
+                                                  focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                
+                                <div>
+                                    <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Phone Number
+                                    </label>
+                                    <input type="tel" id="phone" name="phone" required 
+                                           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 
+                                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
+                                                  focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                
+                                <div>
+                                    <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Additional Details
+                                    </label>
+                                    <textarea id="message" name="message" rows="4" 
+                                              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 
+                                                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
+                                                     focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+                                </div>
+                                
+                                <button type="submit" 
+                                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 
+                                               rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
+                                    <span>Request Quote</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 @endif
 
-                <!-- Contact Box -->
-                <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-xl font-semibold mb-4">Get Started</h3>
-                    <p class="mb-6">Contact us now to learn more about the selected services.</p>
-                    <button onclick="submitQuoteRequest()" 
-                            class="block w-full text-center bg-white text-purple-600 py-3 rounded-lg hover:bg-gray-100 transition-colors">
-                        Request Quote for Selected Packages
-                    </button>
-                </div>
+   
             </div>
         </div>
     </div>
@@ -134,25 +186,13 @@
                 }
             });
         }
+        
+        // Show confirmation after form submission
+        document.getElementById('quoteForm').addEventListener('submit', function(e) {
+            // Form validation already handled by HTML5 required attributes
+            // Additional JS validation can be added here if needed
+        });
     });
-    
-    // Handle quote request
-    function submitQuoteRequest() {
-        const form = document.getElementById('quoteForm');
-        const selectedPackage = form.querySelector('input[name="selected_package"]:checked');
-
-        if (!selectedPackage) {
-            alert('Please select a package');
-            return;
-        }
-
-        const packageData = @json(json_decode($service->items, true));
-        const selectedPackageData = packageData[selectedPackage.value];
-
-        // Add your quote request logic here
-        console.log('Selected package:', selectedPackageData);
-        // You can redirect to contact form or open modal with selected package
-    }
 </script>
 
 <style>

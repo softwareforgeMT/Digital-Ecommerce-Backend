@@ -2,7 +2,6 @@
 
 
 
-
 .topbar-user {
     background-color: var(--secondary-color);
 }
@@ -67,7 +66,7 @@
     border-right: none; /* Remove the border */
 }
 .logo-lg img{
-    height: 40px !important;
+    height: 60px !important;
 }
 .navbar-menu .navbar-nav .nav-link{
     font-family: unset;

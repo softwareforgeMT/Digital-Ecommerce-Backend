@@ -59,10 +59,10 @@ class CartController extends Controller
             'message' => 'Product added to cart successfully',
             'cart_count' => $cart->items->sum('quantity'),
             'cart' => [
-                'subtotal' => Helpers::formatPrice($totals['subtotal']),
-                'tax' => Helpers::formatPrice($totals['tax']),
-                'total' => Helpers::formatPrice($totals['total']),
-                'discount' => $cart->discount ? Helpers::formatPrice($cart->discount) : null
+                'subtotal' => Helpers::setCurrency($totals['subtotal']),
+                'tax' => Helpers::setCurrency($totals['tax']),
+                'total' => Helpers::setCurrency($totals['total']),
+                'discount' => $cart->discount ? Helpers::setCurrency($cart->discount) : null
             ]
         ]);
     }
@@ -84,10 +84,10 @@ class CartController extends Controller
             'success' => true,
             'message' => 'Cart updated successfully',
             'cart' => [
-                'subtotal' => Helpers::formatPrice($totals['subtotal']),
-                'tax' => Helpers::formatPrice($totals['tax']),
-                'total' => Helpers::formatPrice($totals['total']),
-                'discount' => $cart->discount ? Helpers::formatPrice($cart->discount) : null
+                'subtotal' => Helpers::setCurrency($totals['subtotal']),
+                'tax' => Helpers::setCurrency($totals['tax']),
+                'total' => Helpers::setCurrency($totals['total']),
+                'discount' => $cart->discount ? Helpers::setCurrency($cart->discount) : null
             ]
         ]);
     }
@@ -109,10 +109,10 @@ class CartController extends Controller
                 'success' => true,
                 'message' => 'Item removed from cart',
                 'cart' => [
-                    'subtotal' => Helpers::formatPrice($cart->subtotal),
-                    'tax' => Helpers::formatPrice($cart->tax),
-                    'total' => Helpers::formatPrice($cart->total),
-                    'discount' => $cart->discount ? Helpers::formatPrice($cart->discount) : null
+                    'subtotal' => Helpers::setCurrency($cart->subtotal),
+                    'tax' => Helpers::setCurrency($cart->tax),
+                    'total' => Helpers::setCurrency($cart->total),
+                    'discount' => $cart->discount ? Helpers::setCurrency($cart->discount) : null
                 ]
             ]);
         } catch (\Exception $e) {

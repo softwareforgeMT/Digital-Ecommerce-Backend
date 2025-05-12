@@ -48,6 +48,13 @@ class CheckoutController extends Controller
 
     public function process(Request $request)
     {
+        $request->validate([
+            // ...existing validation rules...
+            'warranty_confirmed' => 'required|accepted',
+        ], [
+            'warranty_confirmed.accepted' => 'You must confirm that you have read and understood the warranty terms.'
+        ]);
+
         try {
             DB::beginTransaction();
             
@@ -147,22 +154,22 @@ class CheckoutController extends Controller
             CartLogics::decrementStock($order);
 
             // Clear the cart after successful order creation
-            $cart->items()->delete();
-            $cart->update([
-                'subtotal' => 0,
-                'tax' => 0,
-                'total' => 0,
-                'discount' => 0
-            ]);
+            // $cart->items()->delete();
+            // $cart->update([
+            //     'subtotal' => 0,
+            //     'tax' => 0,
+            //     'total' => 0,
+            //     'discount' => 0
+            // ]);
 
             DB::commit();
 
             // Redirect based on payment method
             switch ($request->payment_method) {
                 case 'stripe':
-                    return app(StripeController::class)->redirect($order->order_number);
+                    return app(StripeController::class)->processPayment($order->order_number);
                 case 'paypal':
-                    return app(PaypalController::class)->redirect($order->order_number);
+                    return app(PaypalController::class)->processPayment($order->order_number);
                 default:
                     return redirect()->route('user.orders.show', $order->order_number)
                                    ->with('success', 'Order placed successfully!');

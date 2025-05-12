@@ -4,6 +4,40 @@
     Review Submission
 @endsection
 
+@section('css')
+<style>
+    .aspect-w-4 {
+        position: relative;
+        padding-bottom: 75%; /* 4:3 Aspect Ratio */
+    }
+    .aspect-w-4 img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    /* Lightbox effect on image click */
+    .proof-image-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+    }
+    .proof-image-overlay img {
+        max-width: 90%;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+</style>
+@endsection
+
 @section('content')
     <!-- start page title -->
     <div class="row">
@@ -45,40 +79,6 @@
                                             <td>{{ $data->created_at->format('M d, Y h:i A') }}</td>
                                         </tr>
                                         <tr>
-                                            <th scope="row">Status</th>
-                                            <td>
-                                                @if($data->status == 'approved')
-                                                    <span class="badge badge-soft-success">Approved</span>
-                                                @elseif($data->status == 'rejected')
-                                                    <span class="badge badge-soft-danger">Rejected</span>
-                                                @else
-                                                    <span class="badge badge-soft-warning">Pending</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @if($data->status != 'pending')
-                                        <tr>
-                                            <th scope="row">Reviewed On</th>
-                                            <td>{{ $data->approved_at ? $data->approved_at->format('M d, Y h:i A') : 'N/A' }}</td>
-                                        </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <h5>User Information</h5>
-                            <div class="table-responsive">
-                                <table class="table table-borderless mb-0">
-                                    <tbody>
-                                        <tr>
-                                            <th scope="row" width="30%">User ID</th>
-                                            <td>{{ $data->user->id }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Name</th>
-                                            <td>{{ $data->user->name }}</td>
                                         </tr>
                                         <tr>
                                             <th scope="row">Email</th>
@@ -111,6 +111,25 @@
                                         <th scope="row">Bit Value</th>
                                         <td>{{ $data->task->bit_value }} bits</td>
                                     </tr>
+                                    @if($data->task->max_submissions)
+                                    <tr>
+                                        <th scope="row">User Submission Limit</th>
+                                        <td>{{ $userApprovedCount }} / {{ $data->task->max_submissions }} 
+                                            <span class="badge bg-info">
+                                                {{ $data->task->max_submissions - $userApprovedCount }} remaining
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">User's Monthly Submissions</th>
+                                        <td>{{ $userRecentSubmissionsCount }} / {{ $data->task->max_submissions }} 
+                                            <span class="badge bg-info">
+                                                {{ $data->task->max_submissions - $userRecentSubmissionsCount }} remaining
+                                            </span>
+                                            <small class="text-muted d-block">Resets 30 days after first submission</small>
+                                        </td>
+                                    </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
@@ -124,29 +143,50 @@
                     </div>
                     
                     @if($data->proof)
-                    <div class="mb-4">
-                        <h5>Proof Submission</h5>
-                        <div class="border rounded p-3">
-                            @php
-                                $extension = pathinfo($data->proof, PATHINFO_EXTENSION);
-                                $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
-                                $isPdf = strtolower($extension) == 'pdf';
-                            @endphp
-                            
-                            @if($isImage)
-                                <img src="{{ $data->proof_url }}" alt="Proof" class="img-fluid rounded" style="max-height: 300px;">
-                            @elseif($isPdf)
-                                <a href="{{ $data->proof_url }}" target="_blank" class="btn btn-outline-primary">
-                                    <i class="ri-file-pdf-line me-1"></i> View PDF
-                                </a>
-                            @else
-                                <a href="{{ $data->proof_url }}" target="_blank" class="btn btn-outline-primary">
-                                    <i class="ri-file-line me-1"></i> View File
-                                </a>
-                            @endif
-                        </div>
+    <div class="card mb-4">
+        <div class="card-header bg-light d-flex align-items-center">
+            <i class="ri-attachment-2 me-2 text-primary"></i>
+            <h5 class="card-title mb-0">Proof Submissions</h5>
+            <span class="badge bg-primary rounded-pill ms-auto">
+                {{ count(json_decode($data->proof)) }} file(s)
+            </span>
+        </div>
+        
+        <div class="card-body p-3">
+            <div class="row g-3">
+                @foreach(json_decode($data->proof) as $proof)
+                    @php
+                        $extension = pathinfo($proof, PATHINFO_EXTENSION);
+                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
+                        $isPdf = strtolower($extension) == 'pdf';
+                        $fileName = basename($proof);
+                        $fileColor = $isImage ? 'success' : ($isPdf ? 'danger' : 'info');
+                        $fileIcon = $isImage ? 'image' : ($isPdf ? 'file-pdf' : 'file-text');
+                    @endphp
+                    
+                    <div class="col-6 col-sm-4 col-lg-3">
+                        <a href="{!! Helpers::image($proof, 'bit-submissions/') !!}" 
+                           target="_blank" 
+                           class="text-decoration-none">
+                            <div class="border rounded position-relative overflow-hidden">
+                                <div class="p-3 d-flex align-items-center">
+                                    <div class="me-3 fs-4">
+                                        <i class="ri-{{ $fileIcon }}-line text-{{ $fileColor }}"></i>
+                                    </div>
+                                    <div class="text-truncate">
+                                        <p class="mb-0 text-truncate small">{{ $fileName }}</p>
+                                        <small class="text-muted text-uppercase">{{ $extension }}</small>
+                                    </div>
+                                </div>
+                                <div class="border-start border-5 border-{{ $fileColor }} position-absolute top-0 start-0 h-100"></div>
+                            </div>
+                        </a>
                     </div>
-                    @endif
+                @endforeach
+            </div>
+        </div>
+    </div>
+@endif
                     
                     @if($data->status != 'pending')
                     <div class="mb-4">

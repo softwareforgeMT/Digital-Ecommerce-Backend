@@ -1,12 +1,14 @@
 @extends('front.layouts.app')
 
+@section('meta_title', "Blog" )
+@section('meta_description', "Explore our latest insights, guides, and tech stories about computer nostalgia, services, and products" )
+
 @section('meta')
-    <title>Blog - {{ config('app.name') }}</title>
-    <meta name="description" content="Explore our latest insights, guides, and tech stories about computer nostalgia, services, and products">
+
     <meta name="keywords" content="blog, tech articles, computer nostalgia, tech guides">
     
     <!-- Open Graph Tags -->
-    <meta property="og:title" content="Blog - {{ config('app.name') }}">
+    <meta property="og:title" content="Blog - {{$gs->name }}">
     <meta property="og:description" content="Explore our latest insights, guides, and tech stories">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
@@ -14,7 +16,7 @@
     
     <!-- Twitter Card Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Blog - {{ config('app.name') }}">
+    <meta name="twitter:title" content="Blog -  {{$gs->name }}">
     <meta name="twitter:description" content="Explore our latest insights, guides, and tech stories">
     <meta name="twitter:image" content="{{ asset('assets/front/images/homepagebg.jpg') }}">
     

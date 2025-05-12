@@ -6,20 +6,20 @@
                 <div class="navbar-brand-box horizontal-logo">
                     <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
                         <span class="logo-sm">
-                            <img src="{{ URL::asset('assets/images/logo-lg.png') }}" alt="" height="22">
+                            <img src="{{ URL::asset('assets/logo/logo-light.png') }}" alt="" height="22">
                         </span>
                         <span class="logo-lg">
-                            <img src="{{ URL::asset('assets/images/logo-lg.png') }}" alt="" height="17">
+                            <img src="{{ URL::asset('assets/logo/logo-light.png') }}" alt="" height="17">
                         </span>
                     </a>
 
                     <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
                         <span class="logo-sm">
-                            <img src="{{ URL::asset('assets/images/logo-lg.png') }}" alt=""
+                            <img src="{{ URL::asset('assets/logo/logo-light.png') }}" alt=""
                                 height="22">
                         </span>
                         <span class="logo-lg">
-                            <img src="{{ URL::asset('assets/images/logo-lg.png') }}" alt="" height="17">
+                            <img src="{{ URL::asset('assets/logo/logo-light.png') }}" alt="" height="17">
                         </span>
                     </a>
                 </div>
@@ -40,14 +40,14 @@
             <div class="d-flex align-items-center">
 
 
-                <div class="dropdown ms-1 topbar-head-dropdown header-item">
+                {{-- <div class="dropdown ms-1 topbar-head-dropdown header-item">
                     <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <img src="{{ URL::asset('/assets/images/flags/us.svg') }}" class="rounded" alt="Header Language"
                             height="20">
                     </button>
 
-                </div>
+                </div> --}}
 
 
                 <div class="ms-1 header-item d-none d-sm-flex">

@@ -8,7 +8,7 @@
                             @endif
                             @if($service->items)
                                 <div class="absolute top-4 right-4 bg-purple-600 text-white px-3 py-1 rounded-full text-sm">
-                                    From ${{ number_format(min(array_column(json_decode($service->items, true), 'price')), 2) }}
+                                    From {{ Helpers::setCurrency(min(array_column(json_decode($service->items, true), 'price'))) }}
                                 </div>
                             @endif
                         </div>

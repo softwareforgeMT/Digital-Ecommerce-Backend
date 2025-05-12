@@ -41,20 +41,23 @@ class UserController extends Controller
     }
     
     public function secretlogin($email)
-    {
-        $user=User::user()->where('email',$email)->first();
-        Auth::guard('web')->login($user); 
+    {   if(Auth::guard('admin')->user()->IsSuper()){
+            $user=User::user()->where('email',$email)->first();
+            Auth::guard('web')->login($user); 
+        }
+        
     }
 
      //*** GET Request
     public function secret($id)
-    {
-
-        Auth::guard('web')->logout();
-        // $data = User::find($id);
-        $data=User::user()->where('id',$id)->first();
-        Auth::guard('web')->login($data); 
-        return redirect()->route('user.dashboard');
+    { 
+        if(Auth::guard('admin')->user()->IsSuper()){
+            Auth::guard('web')->logout();
+            // $data = User::find($id);
+            $data=User::user()->where('id',$id)->first();
+            Auth::guard('web')->login($data); 
+            return redirect()->route('user.dashboard');
+        }
     }
 
     public function usersDataTables($value='')
@@ -90,11 +93,18 @@ class UserController extends Controller
                                 return '<div class="action-list"><select class="process select droplinks '.$class.'"><option data-val="1" value="'. route('admin.user.status',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>Activated</option><option data-val="0" value="'. route('admin.user.status',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>Deactivated</option></select></div>';
                             })
                             ->addColumn('action', function(User $data) {
-                                return '<div class="action-list g-2">
-                                 <a href="'.route('admin.users.show',$data->id).'" class="btn btn-info btn-sm fs-13 waves-effect waves-light"><i class="ri-eye-fill align-middle fs-16 me-2"></i>View</a> 
-                                 <a href="' . route('admin.user.secret',$data->id) . '"  class="btn btn-sm fs-13 btn-danger waves-effect waves-light"><i class="ri-eye-fill align-middle fs-16 "></i> Secret Login</a>
-                                </div>';
-                            }) 
+                                $actions = '<div class="action-list d-flex gap-2">
+                                            <a href="'.route('admin.users.show', $data->id).'" class="btn btn-info btn-sm fs-13 waves-effect waves-light"><i class="ri-eye-fill align-middle fs-16 me-2"></i>View</a>';
+                                            
+                                // Check if the logged-in admin is a super admin
+                                if(Auth::guard('admin')->user()->IsSuper()) {
+                                    $actions .= '<a href="' . route('admin.user.secret', $data->id) . '" class="btn btn-sm fs-13 btn-danger waves-effect waves-light"><i class="ri-eye-fill align-middle fs-16 "></i> Secret Login</a>';
+                                }
+
+                                $actions .= '</div>';
+                                return $actions;
+                            })
+
                             ->rawColumns(['user_details','created_at','member_ship_level','member_ship','status','action'])
                             ->toJson(); //--- Returning Json Data To Client Side
       

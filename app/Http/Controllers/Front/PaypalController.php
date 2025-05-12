@@ -9,14 +9,18 @@ use Illuminate\Http\Request;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Exception;
 use DB;
+
+use App\Models\GeneralSetting;
 use Log;
 
 class PaypalController extends Controller
 {
     protected PayPalClient $provider;
 
-    public function __construct()
+
+    public function __construct(Request $request)
     {
+        $this->middleware('auth');
         $this->provider = new PayPalClient();
         // load credentials & generate access token
         $this->provider->setApiCredentials(config('paypal'));
@@ -26,9 +30,10 @@ class PaypalController extends Controller
     /**
      * Create PayPal order & redirect user to approval URL
      */
-    public function redirect(string $orderNumber)
+    public function processPayment(string $orderNumber)
     {
         try {
+            $gs=GeneralSetting::findOrFail(1);
             $order = Order::where('order_number', $orderNumber)
                           ->where('user_id', auth()->id())
                           ->whereIn('status', ['pending', 'processing'])
@@ -45,7 +50,7 @@ class PaypalController extends Controller
                     'description'  => 'Order #' . $order->order_number,
                 ]],
                 'application_context' => [
-                    'brand_name'             => config('app.name'),
+                    'brand_name'             => $gs->name,
                     'return_url'             => route('front.payment.paypal.success',   ['orderNumber' => $orderNumber]),
                     'cancel_url'             => route('front.checkout.cancel',         ['orderNumber' => $orderNumber]),
                     'user_action'            => 'PAY_NOW',

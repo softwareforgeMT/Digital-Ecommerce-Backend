@@ -35,10 +35,14 @@ class ProductCategory extends Model
 
     public function directProducts()
     {
-        return $this->hasMany(Product::class, 'category_id');
+        return $this->hasMany(Product::class, 'category_id')
+                    ->where('status', 1); // Only active products
     }
+
     public function directSubProducts()
     {
-        return $this->hasMany(Product::class, 'subcategory_id');
+        return $this->hasMany(Product::class, 'subcategory_id')
+                    ->where('status', 1); // Only active products
     }
+
 }

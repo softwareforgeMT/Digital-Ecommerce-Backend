@@ -19,7 +19,7 @@
                                             @endforeach
                                         </div>
                                     @endif
-                                    <p class="text-sm font-medium text-purple-600">{{ Helpers::formatPrice($item->price) }}</p>
+                                    <p class="text-sm font-medium text-purple-600">{{ Helpers::setCurrency($item->price) }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -32,14 +32,14 @@
                             <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mb-4">
                                 <div class="flex items-center justify-between mb-2">
                                     <label for="use_bits" class="text-sm font-medium text-gray-700 dark:text-gray-300">Use Bits ({{ $userBitBalance }} available)</label>
-                                    <span id="bits-value" class="text-sm font-medium text-purple-600">{{ Helpers::formatPrice(0) }}</span>
+                                    <span id="bits-value" class="text-sm font-medium text-purple-600">{{ Helpers::setCurrency(0) }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <input type="range" id="use_bits" name="use_bits" min="0" max="{{ $userBitBalance }}" value="0"
                                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
                                     <span id="bits-display" class="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[40px] text-right">0</span>
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Each bit is worth {{ Helpers::formatPrice($gs->bit_value) }} in discount</p>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Each bit is worth {{ Helpers::setCurrency($gs->bit_value) }} in discount</p>
                             </div>
                             
                             <input type="hidden" name="use_bits_hidden" id="use_bits_hidden" value="0">
@@ -50,35 +50,35 @@
                     <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                            <span id="summary-subtotal" class="font-medium text-gray-900 dark:text-white">{{ Helpers::formatPrice($cart->subtotal) }}</span>
+                            <span id="summary-subtotal" class="font-medium text-gray-900 dark:text-white">{{ Helpers::setCurrency($cart->subtotal) }}</span>
                         </div>
                         
                         <!-- Bits discount will appear here -->
                         <div id="bits-discount-row" class="flex justify-between text-sm {{ isset($userBitBalance) && $userBitBalance > 0 ? 'hidden' : 'hidden' }}">
                             <span class="text-gray-600 dark:text-gray-400">Bits Discount</span>
-                            <span id="bits-discount" class="font-medium text-green-600">-{{ Helpers::formatPrice(0) }}</span>
+                            <span id="bits-discount" class="font-medium text-green-600">-{{ Helpers::setCurrency(0) }}</span>
                         </div>
                         
                         @if($cart->discount > 0)
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Coupon Discount</span>
-                                <span class="font-medium text-green-600">-{{ Helpers::formatPrice($cart->discount) }}</span>
+                                <span class="font-medium text-green-600">-{{ Helpers::setCurrency($cart->discount) }}</span>
                             </div>
                         @endif
                         
-                        <div class="flex justify-between text-sm">
+                       {{--  <div class="flex justify-between text-sm">
                             <span class="text-gray-600 dark:text-gray-400">Shipping</span>
-                            <span id="summary-shipping" class="font-medium text-gray-900 dark:text-white">{{ Helpers::formatPrice($cart->shipping) }}</span>
-                        </div>
+                            <span id="summary-shipping" class="font-medium text-gray-900 dark:text-white">{{ Helpers::setCurrency($cart->shipping) }}</span>
+                        </div> --}}
                         
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600 dark:text-gray-400">Tax</span>
-                            <span id="summary-tax" class="font-medium text-gray-900 dark:text-white">{{ Helpers::formatPrice($cart->tax) }}</span>
+                            <span id="summary-tax" class="font-medium text-gray-900 dark:text-white">{{ Helpers::setCurrency($cart->tax) }}</span>
                         </div>
                         
                         <div class="flex justify-between text-lg font-semibold border-t border-gray-200 dark:border-gray-700 pt-4">
                             <span class="text-gray-900 dark:text-white">Total</span>
-                            <span id="summary-total" class="text-purple-600">{{ Helpers::formatPrice($cart->total) }}</span>
+                            <span id="summary-total" class="text-purple-600">{{ Helpers::setCurrency($cart->total) }}</span>
                         </div>
                     </div>
 

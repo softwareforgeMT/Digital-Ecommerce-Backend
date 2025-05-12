@@ -35,7 +35,7 @@
                         <div class="col-7">
                             <!-- Company Info -->
                             <div class="mb-4">
-                                <img src="{{ URL::asset('assets/images/logo-lg.png') }}" alt="Logo" height="30">
+                                <img src="{{ URL::asset('assets/logo/logo-light.png') }}" alt="Logo" height="50">
                                 <div class="mt-4">
                                     <h5 class="mb-1">{{ $gs->title }}</h5>
                                     <p class="mb-1">{{ $gs->office_address ?? 'No address specified' }}</p>
@@ -149,7 +149,7 @@
                     </div>
 
                     <!-- Totals -->
-                    <div class="row justify-content-end mt-4">
+                    {{-- <div class="row justify-content-end mt-4">
                         <div class="col-sm-6">
                             <div class="table-responsive">
                                 <table class="table">
@@ -187,7 +187,7 @@
                             </div>
                         </div>
                     </div>
-
+ --}}
                     <!-- Thank You Note -->
                     <div class="mt-5 text-center">
                         <p class="mb-0 text-muted">Thank you for your business!</p>

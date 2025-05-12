@@ -1,6 +1,83 @@
 @extends('front.layouts.app')
 
-@section('title', 'Bit Tasks')
+@section('meta_title', 'Bit Tasks')
+
+@section('css')
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<style>
+    /* DataTable wrapper and controls */
+    .dataTables_wrapper {
+        @apply text-gray-700 dark:text-gray-300;
+    }
+
+    /* Length (Show entries) control */
+    #bitTasksTable_length {
+        @apply mb-4;
+    }
+
+    #bitTasksTable_length label {
+        @apply flex items-center gap-2;
+    }
+
+    #bitTasksTable_length select {
+        @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2;
+        min-width: 80px;
+    }
+
+    /* Filter (Search) control */
+    #bitTasksTable_filter {
+        @apply mb-4;
+    }
+
+    #bitTasksTable_filter label {
+        @apply flex items-center gap-2;
+    }
+
+    #bitTasksTable_filter input {
+        @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2;
+        min-width: 200px;
+    }
+
+    /* Table styling */
+    #bitTasksTable {
+        @apply w-full border-collapse;
+    }
+
+    #bitTasksTable thead th {
+        @apply bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-3 text-left border-b border-gray-200 dark:border-gray-600;
+    }
+
+    #bitTasksTable tbody tr {
+        @apply bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600;
+    }
+
+    #bitTasksTable tbody td {
+        @apply px-4 py-3 text-gray-700 dark:text-gray-300;
+    }
+
+    /* Pagination controls */
+    .dataTables_paginate {
+        @apply mt-4 flex items-center justify-end gap-2;
+    }
+
+    .paginate_button {
+        @apply px-3 py-1 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600;
+    }
+
+    .paginate_button.current {
+        @apply bg-purple-600 text-white border-purple-600 hover:bg-purple-700 dark:hover:bg-purple-700;
+    }
+
+    .paginate_button.disabled {
+        @apply opacity-50 cursor-not-allowed;
+    }
+
+    /* Processing display */
+    .dataTables_processing {
+        @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-lg rounded-lg p-4;
+    }
+</style>
+@endsection
 
 @section('content')
 <div class="container mx-auto px-4 py-12">
@@ -8,12 +85,13 @@
         <!-- Sidebar -->
         <div class="lg:w-1/4">
             @include('user.partials.sidebar')
+
         </div>
 
         <!-- Main Content -->
-        <div class="lg:w-3/4 space-y-8">
+        <div class="lg:w-3/4">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-6 shadow">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-6 shadow mb-8">
                 <div class="flex justify-between items-center">
                     <div>
                         <h1 class="text-2xl font-bold text-white">Bit Tasks</h1>
@@ -26,75 +104,64 @@
                 </div>
             </div>
 
-            <!-- Task List -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @forelse($tasks as $task)
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-                        <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-                            <h2 class="font-semibold text-lg text-gray-800 dark:text-white">{{ $task->title }}</h2>
-                            <div class="flex items-center mt-2">
-                                <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">
-                                    {{ $task->bit_value }} Bits
-                                </span>
-                                
-                                @if(in_array($task->id, $completedTasks))
-                                    <span class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                                        Completed
-                                    </span>
-                                @endif
-                                
-                                @if($task->max_submissions && $task->approved_submissions_count >= $task->max_submissions)
-                                    <span class="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
-                                        Max Reached
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                        
-                        <div class="p-6">
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ Str::limit($task->description, 120) }}</p>
-                            
-                            <div class="flex justify-between items-center">
-                                @if(in_array($task->id, $completedTasks))
-                                    <span class="text-green-600 dark:text-green-400 text-sm font-medium">
-                                        <i class="fas fa-check-circle mr-1"></i> Submitted
-                                    </span>
-                                @else
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $task->total_submissions }} submissions
-                                    </span>
-                                @endif
-                                
-                                <a href="{{ route('user.bit-tasks.show', $task) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
-                                    View Task
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
-                        <div class="flex flex-col items-center">
-                            <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-full mb-4">
-                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">No Tasks Available</h3>
-                            <p class="mt-1 text-gray-500 dark:text-gray-400">Check back soon for new opportunities to earn bits!</p>
-                        </div>
-                    </div>
-                @endforelse
-            </div>
-            
-            <!-- Pagination -->
-            <div>
-                {{ $tasks->links() }}
+            <!-- DataTable -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                <div class="p-6">
+                    <table id="bitTasksTable" class="w-full text-left stripe hover">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="whitespace-nowrap">Title</th>
+                                <th class="whitespace-nowrap">Bits</th>
+                                <th class="whitespace-nowrap">Submissions</th>
+                                <th class="whitespace-nowrap">Status</th>
+                                <th class="whitespace-nowrap">Action</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+@endsection
+
+@section('script')
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#bitTasksTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('user.bit-tasks.index') }}",
+        columns: [
+            {data: 'title', name: 'title'},
+            {data: 'bit_value', name: 'bit_value'},
+            {data: 'total_submissions', name: 'total_submissions'},
+            {data: 'status', name: 'status', orderable: false, searchable: false},
+            {data: 'action', name: 'action', orderable: false, searchable: false}
+        ],
+        responsive: true,
+        dom: '<"flex flex-col md:flex-row justify-between items-center mb-4"lf>rt<"flex flex-col md:flex-row justify-between items-center mt-4"ip>',
+        language: {
+            search: "Search:",
+            lengthMenu: "_MENU_ per page",
+            processing: '<i class="fas fa-spinner fa-spin"></i> Loading...',
+            paginate: {
+                first: '<i class="fas fa-angle-double-left"></i>',
+                last: '<i class="fas fa-angle-double-right"></i>',
+                next: '<i class="fas fa-angle-right"></i>',
+                previous: '<i class="fas fa-angle-left"></i>'
+            }
+        },
+        drawCallback: function() {
+            // Style action buttons
+            $('.btn-primary').addClass('inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors');
+            
+            // Style status badges
+            $('.badge.bg-success').addClass('px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300');
+            $('.badge.bg-danger').addClass('px-2.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300');
+        }
+    });
+});
+</script>
 @endsection

@@ -1,6 +1,6 @@
 @extends('front.layouts.app')
 
-@section('title', 'Change Password')
+@section('meta_title', 'Change Password')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">

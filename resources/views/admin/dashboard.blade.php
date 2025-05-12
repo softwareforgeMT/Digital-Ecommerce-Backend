@@ -73,7 +73,7 @@
                         </div>
                         <div class="ms-3">
                             <p class="fw-medium text-uppercase text-muted mb-1 fs-14">Total Revenue</p>
-                            <h4 class="fs-22 fw-semibold mb-0">{{ Helpers::formatPrice($totalRevenue) }}</h4>
+                            <h4 class="fs-22 fw-semibold mb-0">{{ Helpers::setCurrency($totalRevenue) }}</h4>
                         </div>
                     </div>
                     <div class="d-flex align-items-center  gap-2 mb-3">
@@ -349,7 +349,7 @@
                                         </td>
                                         <td>{{ $order->user ? Str::limit($order->user->name, 15) : 'Guest' }}</td>
                                         <td>{{ $order->created_at->format('d M') }}</td>
-                                        <td>{{ Helpers::formatPrice($order->total) }}</td>
+                                        <td>{{ Helpers::setCurrency($order->total) }}</td>
                                         <td>
                                             <span class="badge 
                                                 {{ $order->status == 'completed' ? 'bg-success' : '' }}
@@ -413,9 +413,9 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ Helpers::formatPrice($product->price) }}</td>
+                                        <td>{{ Helpers::setCurrency($product->price) }}</td>
                                         <td><span class="text-success fw-medium">{{ $product->total_sold }}</span></td>
-                                        <td>{{ Helpers::formatPrice($product->total_revenue) }}</td>
+                                        <td>{{ Helpers::setCurrency($product->total_revenue) }}</td>
                                     </tr>
                                 @empty
                                     <tr>

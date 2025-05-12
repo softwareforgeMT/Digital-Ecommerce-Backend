@@ -148,6 +148,20 @@
                                     </div>
                                 </div>
 
+                                <div class="col-xl-6 col-md-6">
+                                    <div>
+                                        <label for="basiInput" class="form-label"> Email</label>
+                                        <input type="text" class="form-control" id="basiInput" value="{{$data->from_email}}"  name="from_email" required>
+                                    </div>
+                                </div>
+
+                                {{-- <div class="col-xl-6 col-md-6">
+                                    <div>
+                                        <label for="basiInput" class="form-label"> Email</label>
+                                        <input type="text" class="form-control" id="basiInput" value="{{$data->from_email}}"  name="from_email" required>
+                                    </div>
+                                </div> --}}
+
                                
                                 <!--end col-->
                                 <div class="col-12">

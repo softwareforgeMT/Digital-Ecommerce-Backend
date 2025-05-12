@@ -1,4 +1,10 @@
-@extends('layouts.master-without-nav')
+@extends('front.layouts.app')
+
+@section('meta')
+    <title>Create an Account - {{ $gs->name }}</title>
+    <meta name="description" content="Join {{ $gs->name }} to access exclusive deals, track orders, and manage your digital products.">
+@endsection
+
 @section('title')
     @lang('translation.signup')
 @endsection

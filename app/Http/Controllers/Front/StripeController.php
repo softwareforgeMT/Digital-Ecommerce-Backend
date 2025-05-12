@@ -9,17 +9,21 @@ use App\CentralLogics\Helpers;
 use Stripe\Stripe;
 use Exception;
 use DB;
+use App\Models\GeneralSetting;
 
+use Illuminate\Http\Request;
 class StripeController extends Controller
 {
-    public function __construct()
+    public function __construct(Request $request)
     {
+        $this->middleware('auth');
         Stripe::setApiKey(env('STRIPE_SECRET'));
     }
 
-    public function redirect($orderNumber) 
+    public function processPayment($orderNumber) 
     {
         try {
+            $gs=GeneralSetting::findOrFail(1);
             $order = Order::where('order_number', $orderNumber)
                          ->where('user_id', auth()->id())
                          ->whereIn('status', ['pending', 'processing'])
@@ -33,7 +37,7 @@ class StripeController extends Controller
                         'currency' => strtolower($order->currency),
                         'product_data' => [
                             'name' => 'Order #' . $order->order_number,
-                            'description' => 'Payment for your order at ' . config('app.name'),
+                            'description' => 'Payment for your order at ' . $gs->name,
                         ],
                         'unit_amount' => intval($order->total * 100), // Convert to cents
                     ],

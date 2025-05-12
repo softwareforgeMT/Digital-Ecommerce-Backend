@@ -1,6 +1,6 @@
 @extends('front.layouts.app')
 
-@section('title', 'Submission History')
+@section('meta_title', 'Submission History')
 
 @section('content')
 <div class="container mx-auto px-4 py-12">
@@ -108,7 +108,7 @@
                                                 <span class="text-lg font-semibold text-green-600 dark:text-green-400">+{{ $submission->task->bit_value }} Bits</span>
                                             @endif
                                             
-                                            <a href="{{ route('user.bit-tasks.show', $submission->task) }}" 
+                                            <a href="{{ route('user.bit-tasks.show', $submission->task->slug) }}" 
                                                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                 View Task
                                             </a>

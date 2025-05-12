@@ -14,7 +14,7 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="live-preview">
-                <form action="{{ route('admin.product.store') }}" method="POST" enctype="multipart/form-data" id="geniusform1">
+                <form action="{{ route('admin.product.store') }}" method="POST" enctype="multipart/form-data" id="geniusform">
                     @csrf
 
                     @include('admin.includes.ajax-alerts')

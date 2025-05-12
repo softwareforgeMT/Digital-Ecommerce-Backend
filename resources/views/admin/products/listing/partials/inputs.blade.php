@@ -36,7 +36,7 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Subcategory <span class="subcategory-required d-none text-danger">*</span></label>
                         <select name="subcategory_id" id="subcategory_id" class="form-control">
-                            <option value="">Select Subcategory</option>
+                            <option value="" selected disabled>Select Subcategory</option>
                             @if(isset($data->category_id))
                                 @foreach($subcategories->where('parent_id', $data->category_id) as $subcategory)
                                     <option value="{{ $subcategory->id }}" {{ old('subcategory_id', $data->subcategory_id ?? '') == $subcategory->id ? 'selected' : '' }}>
@@ -77,7 +77,13 @@
                     @include('includes.inputs.texteditor')
                 </div>
 
-                
+                <!-- Max Bits Allowed -->
+                <div class="mb-3">
+                    <label class="form-label">Max Bits Allowed <span class="text-muted">(Optional)</span></label>
+                    <input type="number" name="max_bits_allowed" class="form-control" min="0" 
+                           value="{{ old('max_bits_allowed', $data->max_bits_allowed ?? 10) }}">
+                    <small class="text-muted">Set the maximum bits allowed for this product (defaults to 10)</small>
+                </div>
 
                 <!-- Gallery -->
                 <div class="mb-3">
@@ -182,7 +188,7 @@
                                         <div class="input-group mb-2">
                                             <input type="hidden" name="option_types[]" value="{{ $variation['option_type_id'] }}">
                                             <input type="text" name="option_values[{{ $variation['option_type_id'] }}][]" 
-                                                   class="form-control" placeholder="Value" 
+                                                   class="form-control" placeholder="Item Name" 
                                                    value="{{ $value['value'] }}" required>
                                             <span class="input-group-text">$</span>
                                             <input type="number" name="option_prices[{{ $variation['option_type_id'] }}][]" 
@@ -225,25 +231,32 @@
             const url = "{{ route('front.getSubcategories', ':categoryId') }}".replace(':categoryId', categoryId);  
             
             fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (data.subcategories.length > 0) {
-                            subcategorySelect.required = true; // Make required if subcategories exist
-                            subcategoryRequired.classList.remove('d-none');
-                            subcategoryHint.innerHTML = 'Subcategory selection is required for this category';
-                            data.subcategories.forEach(subcategory => {
-                                const option = new Option(subcategory.name, subcategory.id);
-                                subcategorySelect.add(option);
-                            });
-                        } else {
-                            subcategorySelect.required = false;
-                            subcategoryRequired.classList.add('d-none');
-                            subcategoryHint.innerHTML = 'No subcategories available for this category';
-                        }
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.subcategories.length > 0) {
+                        subcategorySelect.required = true;
+                        subcategoryRequired.classList.remove('d-none');
+                        subcategoryHint.innerHTML = 'Subcategory selection is required for this category';
+                        data.subcategories.forEach(subcategory => {
+                            const option = new Option(subcategory.name, subcategory.id);
+                            subcategorySelect.add(option);
+                        });
+
+                        // 🌟 Auto-select existing subcategory if editing
+                        @if(old('subcategory_id', $data->subcategory_id ?? null))
+                            subcategorySelect.value = "{{ old('subcategory_id', $data->subcategory_id ?? '') }}";
+                        @endif
+
+                    } else {
+                        subcategorySelect.required = false;
+                        subcategoryRequired.classList.add('d-none');
+                        subcategoryHint.innerHTML = 'No subcategories available for this category';
                     }
-                })
-                .catch(error => console.error('Error:', error));
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
         });
 
         // Initial check for subcategory requirement on page load
@@ -306,7 +319,7 @@ function addVariation(typeId) {
     valueGroup.innerHTML = `
         <input type="hidden" name="option_types[]" value="${typeId}">
         <input type="text" name="option_values[${typeId}][]" 
-               class="form-control" placeholder="Enter value" required>
+               class="form-control" placeholder="Enter Item name" required>
         <span class="input-group-text">$</span>
         <input type="number" name="option_prices[${typeId}][]" 
                class="form-control" placeholder="Additional Price" step="0.01" min="0" required>

@@ -1,12 +1,5 @@
 @extends('front.layouts.app')
-
-@section('meta')
-    <title>Our Services - {{ config('app.name') }}</title>
-    <meta name="description" content="Expert computer repair, maintenance, and tech support services">
-    <meta name="keywords" content="computer repair, tech support, maintenance, IT services">
-    <link rel="canonical" href="{{ url()->current() }}">
-@endsection
-
+@section('meta_title', "Our Services")
 @section('content')
     <!-- Banner Section -->
     <section class="relative h-80 w-full bg-cover bg-center" style="background-image: url('{{asset('assets/front/images/homepagebg.jpg')}}');">

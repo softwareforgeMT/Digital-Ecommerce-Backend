@@ -52,8 +52,8 @@ class Checkout
         $discountAmount = ($price * $discount / 100);
         $finalPrice = $price - $discountAmount;
         return [
-            'discount_amount' => round($discountAmount, 2),
-            'final_price'     => round($finalPrice, 2),
+            'discount_amount' => Helpers::getPrice($discountAmount),
+            'final_price'     => Helpers::getPrice($finalPrice),
         ];
     }
 
@@ -75,7 +75,7 @@ class Checkout
             $percentage_fee = 2.9;
         }
         $fee = ($price * ($percentage_fee / 100)) + $flat_fee;
-        return round($fee, 2);
+        return Helpers::getPrice($fee);
     }
 
     /**

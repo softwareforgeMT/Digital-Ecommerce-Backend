@@ -1,5 +1,5 @@
 @extends('user.layouts.master')
-@section('title')
+@section('meta_title')
     @lang('translation.pricing')
 @endsection
 @section('content')

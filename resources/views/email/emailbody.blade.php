@@ -35,7 +35,7 @@
                     <tr>
                         <td style="text-align:center;">
                           <a href="{{ route('front.index') }}" title="logo" target="_blank">
-                            <img width="160" src="{{ URL::asset('assets/images/logo-lg.png') }}" title="logo" alt="logo">
+                            <img width="160" src="{{ URL::asset('assets/logo/logo-light.png') }}" title="logo" alt="logo">
                           </a>
                         </td>
                     </tr>

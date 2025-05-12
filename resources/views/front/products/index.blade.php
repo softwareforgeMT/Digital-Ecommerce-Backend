@@ -1,10 +1,8 @@
 @extends('front.layouts.app')
 
-@section('meta')
-    <title>Products - {{ config('app.name') }}</title>
-    <meta name="description" content="Browse our collection of computer parts and accessories">
-    <link rel="canonical" href="{{ url()->current() }}">
-@endsection
+@section('meta_title',"Products" )
+@section('meta_description', "Browse our collection of computer parts and accessories"  )
+
 
 @section('content')
     <!-- Banner Section -->

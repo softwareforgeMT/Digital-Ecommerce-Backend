@@ -44,7 +44,9 @@ class NostalgiaController extends Controller
             $query->where('release_year', $request->year);
         }
 
-        $items = $query->latest()->paginate(12);
+        $items = $query
+                ->orderBy('views', 'desc')
+                ->paginate(12);
         $categories = NostalgiaCategory::main()->active()->get();
         $years = NostalgiaItem::active()
             ->selectRaw('DISTINCT release_year')

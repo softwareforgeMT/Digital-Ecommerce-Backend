@@ -1,5 +1,5 @@
 @extends('front.layouts.app')
-
+@section('meta_title', "Cart" )
 @section('content')
 <div class="container mx-auto px-4 py-8">
      @if($cart->items->count() <1)
@@ -42,7 +42,7 @@
                                         @endforeach
                                     </div>
                                 @endif
-                                <div class="mt-2 text-purple-600 dark:text-purple-400">{{ Helpers::formatPrice($item->price) }}</div>
+                                <div class="mt-2 text-purple-600 dark:text-purple-400">{{ Helpers::setCurrency($item->price) }}</div>
                             </div>
                             <div class="flex items-center space-x-4">
                                 <div class="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
@@ -90,21 +90,21 @@
                 <div class="space-y-3 mb-6">
                     <div class="flex justify-between" data-summary="subtotal-container">
                         <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                        <span class="font-medium dark:text-white" data-summary="subtotal">{{ Helpers::formatPrice($cart->subtotal) }}</span>
+                        <span class="font-medium dark:text-white" data-summary="subtotal">{{ Helpers::setCurrency($cart->subtotal) }}</span>
                     </div>
                     <div class="flex justify-between" data-summary="tax-container">
                         <span class="text-gray-600 dark:text-gray-400">Tax</span>
-                        <span class="font-medium dark:text-white" data-summary="tax">{{ Helpers::formatPrice($cart->tax) }}</span>
+                        <span class="font-medium dark:text-white" data-summary="tax">{{ Helpers::setCurrency($cart->tax) }}</span>
                     </div>
                     @if($cart->discount > 0)
                         <div class="flex justify-between text-green-600" data-summary="discount-container">
                             <span>Discount</span>
-                            <span data-summary="discount">-{{ Helpers::formatPrice($cart->discount) }}</span>
+                            <span data-summary="discount">-{{ Helpers::setCurrency($cart->discount) }}</span>
                         </div>
                     @endif
                     <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-3">
                         <span class="text-lg font-bold dark:text-white">Total</span>
-                        <span class="text-lg font-bold text-purple-600" data-summary="total">{{ Helpers::formatPrice($cart->total) }}</span>
+                        <span class="text-lg font-bold text-purple-600" data-summary="total">{{ Helpers::setCurrency($cart->total) }}</span>
                     </div>
                 </div>
 

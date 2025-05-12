@@ -10,32 +10,7 @@
                     </a>
                 </li>  
 
-                {{-- <li class="nav-item">
-                    <a class="nav-link menu-link" href="{{ route('admin.coupon.index') }}" >
-                        <i class="bx bxs-discount"></i> <span>Coupons </span>
-                    </a>
-                </li>   --}}
-                    
-                {{-- <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarPages" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPages">
-                        <i class="ri-pages-line"></i> <span>Subscriptions</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarPages">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.subplan.index') }}" class="nav-link">Subscriptions</a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a href="{{ route('admin.subplan.create') }}" class="nav-link"> Add Subscription 
-                                </a>
-                            </li>
-
-                        </ul>
-                    </div>
-                </li> --}}
-
-
+                
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#productmanagement" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="productmanagement">
                         <i class="ri-stack-line"></i> <span>Product</span>
@@ -144,9 +119,7 @@
             <li class="nav-item">
                 <a href="{{ route('admin.bit-submissions.index') }}" class="nav-link">All Submissions</a>
             </li>
-            {{-- <li class="nav-item">
-                <a href="{{ route('admin.bit-submissions.pending') }}" class="nav-link">Pending Submissions</a>
-            </li> --}}
+
         </ul>
     </div>
 </li>
@@ -154,11 +127,6 @@
 
                 <li class="menu-title"><span>Settings</span></li>
 
-                {{-- <li class="nav-item">
-                    <a class="nav-link menu-link  " href="{{ route('admin.live.chat') }}">
-                        <i class="ri-message-2-line"></i> <span >Old Live Chat</span>
-                    </a>
-                </li>  --}}
 
                 <li class="nav-item">
                     <a class="nav-link menu-link" target="_blank" href="https://dashboard.tawk.to/">
@@ -173,12 +141,12 @@
                         <i class="ri-user-settings-fill"></i> <span>Profile </span>
                     </a>
                 </li>
-                {{-- <li class="nav-item">
+               {{--  <li class="nav-item">
                     <a class="nav-link menu-link" href="{{ route('admin.social') }}" >
                         <i class="ri-team-fill"></i> <span>Social </span>
                     </a>
                 </li> --}}
-                <li class="nav-item">
+               <li class="nav-item">
                     <a class="nav-link menu-link" href="{{ route('admin.staff.index') }}" >
                         <i class="ri-group-2-fill"></i> <span>Manage staff </span>
                     </a>

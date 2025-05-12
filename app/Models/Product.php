@@ -10,8 +10,8 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'slug', 'sku', 'product_type', 'description', 'price', 
-        'quantity', 'status', 'category_id', 'subcategory_id',
-        'tags', 'checks', 'views', 'variations' ,'status' // Add variations here
+        'quantity', 'category_id', 'subcategory_id',
+        'tags', 'checks', 'views', 'variations', 'max_bits_allowed'
     ];
 
     protected $casts = [
@@ -35,8 +35,6 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-
-
 
     public function category()
     {
@@ -71,6 +69,29 @@ class Product extends Model
     public function getRatingCountAttribute()
     {
         return $this->approvedReviews()->count();
+    }
+
+    public function getBitsDiscountedPrice()
+    {   
+        $gs = GeneralSetting::findOrFail(1);
+        if ($this->max_bits_allowed == 0) {
+            return $this->price;
+        }
+        $discountedPrice = $this->price - ($this->max_bits_allowed * $gs->bit_value);
+        return max(0, $discountedPrice);
+    }
+
+    public function getBitsSavingsAmount()
+    {
+        return $this->price - $this->getBitsDiscountedPrice();
+    }
+
+    public function getBitsSavingsPercentage()
+    {
+        if ($this->price > 0) {
+            return number_format((($this->getBitsSavingsAmount() / $this->price) * 100),2);
+        }
+        return 0;
     }
 
     // Add accessor methods for tags and checks

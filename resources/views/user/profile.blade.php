@@ -1,6 +1,6 @@
 @extends('front.layouts.app')
 
-@section('title', 'My Profile')
+@section('meta_title', 'My Profile')
 
 @section('content')
 <div class="container mx-auto px-4 py-12">
@@ -149,7 +149,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right flex flex-col items-end">
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ Helpers::formatPrice($order->total) }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ Helpers::setCurrency($order->total) }}</p>
                                     <div class="flex gap-1 mt-1">
                                         <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full
                                             @if($order->status === 'completed') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300

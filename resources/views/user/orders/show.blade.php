@@ -1,5 +1,5 @@
 @extends('front.layouts.app')
-
+@section('meta_title', 'Order Details')
 @section('content')
 <div class="container mx-auto px-4 py-12">
     <div class="flex flex-col lg:flex-row gap-8">
@@ -43,17 +43,17 @@
                         <div class="space-y-2 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                                <span class="dark:text-white">{{ Helpers::formatPrice($order->subtotal) }}</span>
+                                <span class="dark:text-white">{{ Helpers::setCurrency($order->subtotal) }}</span>
                             </div>
                             
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Shipping</span>
-                                <span class="dark:text-white">{{ Helpers::formatPrice($order->shipping) }}</span>
+                                <span class="dark:text-white">{{ Helpers::setCurrency($order->shipping) }}</span>
                             </div>
                             
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Tax</span>
-                                <span class="dark:text-white">{{ Helpers::formatPrice($order->tax) }}</span>
+                                <span class="dark:text-white">{{ Helpers::setCurrency($order->tax) }}</span>
                             </div>
                             
                             @if($order->discount > 0)
@@ -64,7 +64,7 @@
                                         </svg>
                                         Coupon Discount
                                     </span>
-                                    <span>-{{ Helpers::formatPrice($order->discount) }}</span>
+                                    <span>-{{ Helpers::setCurrency($order->discount) }}</span>
                                 </div>
                             @endif
                             
@@ -77,13 +77,13 @@
                                         Bits Discount
                                         <span class="ml-1 text-xs">({{ $order->bits_used }} bits)</span>
                                     </span>
-                                    <span>-{{ Helpers::formatPrice($order->bits_discount) }}</span>
+                                    <span>-{{ Helpers::setCurrency($order->bits_discount) }}</span>
                                 </div>
                             @endif
                             
                             <div class="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
                                 <span class="font-bold dark:text-white">Total</span>
-                                <span class="font-bold text-purple-600">{{ Helpers::formatPrice($order->total) }}</span>
+                                <span class="font-bold text-purple-600">{{ Helpers::setCurrency($order->total) }}</span>
                             </div>
                         </div>
                     </div>

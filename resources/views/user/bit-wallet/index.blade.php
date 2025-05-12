@@ -1,6 +1,6 @@
 @extends('front.layouts.app')
 
-@section('title', 'Bit Wallet')
+@section('meta_title', 'Bit Wallet')
 
 @section('content')
 <div class="container mx-auto px-4 py-12">
@@ -22,7 +22,7 @@
                     <div class="text-center bg-white/20 rounded-lg p-4">
                         <p class="text-sm text-white/80">Available Balance</p>
                         <p class="text-2xl font-bold text-white">{{ $user->bit_balance }} Bits</p>
-                        <p class="text-xs text-white/60 mt-1">≈ {{ Helpers::formatPrice($user->bit_balance * $gs->bit_value) }} value</p>
+                        <p class="text-xs text-white/60 mt-1">≈ {{ Helpers::setCurrency($user->bit_balance * $gs->bit_value) }} value</p>
                     </div>
                 </div>
             </div>

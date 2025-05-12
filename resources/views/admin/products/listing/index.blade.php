@@ -106,7 +106,12 @@
             serverSide: true,
             ajax: '{{ route("admin.product.datatables") }}',
             columns: [
-                {data: 'DT_RowIndex', name: 'DT_RowIndex', searchable: false, orderable: false},
+                {
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
                 {
                     data: 'photo', 
                     name: 'photo', 
