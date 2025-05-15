@@ -78,9 +78,11 @@ class ProductController extends Controller
 
         $categories = ProductCategory::active()->withCount('products')->get();
         // Get min and max prices for filter
+        
         $priceRange = Product::selectRaw('MIN(price) as min_price, MAX(price) as max_price')->first();
         
         if($path === "postage") {
+            $priceRange = Product::selectRaw('MIN(paypostage_price) as min_price, MAX(paypostage_price) as max_price')->first();
             return view('front.postage.index', compact('products', 'categories', 'priceRange', 'sortOptions'));
         }
 
@@ -100,11 +102,20 @@ class ProductController extends Controller
             ->withAvg('approvedReviews', 'rating')
             ->firstOrFail();
         
-        // Get related products from same category
         $related_products = Product::where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->take(4)
-            ->get();
+                ->where('id', '!=', $product->id)
+                ->where('checks', 'like', '%featured%')
+                ->take(4)
+                ->get();
+        // Get related products from same category
+        if($path[0] === "postage") {
+            $related_products = Product::where('category_id', $product->category_id)
+                    ->where('id', '!=', $product->id)
+                    ->where('checks', 'like', '%postage_eligible%')
+                    ->take(4)
+                    ->get();
+        }
+        
         
         // Get paginated reviews
         $reviews = $product->approvedReviews()
