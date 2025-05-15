@@ -535,6 +535,9 @@ Route::get('/nostalgia/{slug}', [App\Http\Controllers\Front\NostalgiaController:
 Route::get('/nostalgia/categories/{category}/subcategories', [App\Http\Controllers\Front\NostalgiaController::class, 'getSubcategories'])->name('front.nostalgia.subcategories');
 Route::get('/nostalgia/subcategories/{subcategory}/children', [App\Http\Controllers\Front\NostalgiaController::class, 'getChildcategories'])->name('front.nostalgia.childcategories');
 
+//Postage Routes
+Route::get('/postage', [App\Http\Controllers\Front\ProductController::class, 'index'])->name('front.postage.index');
+Route::get('/postage/{slug}', [App\Http\Controllers\Front\ProductController::class, 'show'])->name('front.postage.show');
 // Cart Routes
 Route::group(['prefix' => 'cart', 'as' => 'front.cart.'], function () {
     Route::get('/', [CartController::class, 'index'])->name('index');

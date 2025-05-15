@@ -201,9 +201,13 @@ class ProductController extends Controller
             $product->description = $request->description;
             $product->price = $request->price;
             $product->quantity = $request->quantity;
-            
-            $product->max_bits_allowed = $request->input('max_bits_allowed', 10); // Add this line with default 10
-
+            $product->max_bits_allowed = $request->input('max_bits_allowed', 10);
+            $product->paypostage_price = null;
+            $product->paypostage_stock = null;
+            if($request->checks && in_array('postage_eligible', $request->checks)) {
+                $product->paypostage_price = $request->price;
+                $product->paypostage_stock = $request->quantity;
+            }
             // Handle gallery and main image
             $galleryData = $this->handleGalleryUpload($request, $isUpdate ? $product : null);
             $product->gallery = $galleryData['gallery'];

@@ -31,6 +31,8 @@
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Store</a>
         <a href="{{ route('front.nostalgia.index') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">NostalgiaBase</a>
+        <a href="{{ route('front.postage.index') }}" 
+           class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Postage</a>
         <a href="{{ route('front.services.index') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Services</a>
         <a href="{{ route('front.bit.ledger') }}" 

@@ -1,19 +1,19 @@
 @extends('front.layouts.app')
 
-@section('meta_title',"Products" )
-@section('meta_description', "Browse our collection of computer parts and accessories"  )
+@section('meta_title',"Postage" )
+@section('meta_description', "Browse our collection of postage services"  )
 
 
 @section('content')
     <!-- Banner Section -->
     <section class="relative h-80 w-full bg-cover bg-center" style="background-image: url('{{asset('assets/front/images/homepagebg.jpg')}}');">
         <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center">
-            <h1 class="text-white text-3xl md:text-5xl font-bold tracking-wide">Our Products</h1>
+            <h1 class="text-white text-3xl md:text-5xl font-bold tracking-wide">Our Postage Services</h1>
             <div class="container mx-auto px-4 md:px-8 py-4">
                 <nav class="text-sm text-gray-300">
                     <a href="/" class="hover:text-purple-400">Home</a>
                     <span class="mx-2">/</span>
-                    <span class="text-gray-100">Products</span>
+                    <span class="text-gray-100">Postage</span>
                 </nav>
             </div>
         </div>
@@ -25,7 +25,7 @@
             <div class="lg:w-1/4">
                 <!-- Search -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-                    <form action="{{ route('front.products.index') }}" method="GET" class="relative">
+                    <form action="{{ route('front.postage.index') }}" method="GET" class="relative">
                         @foreach(request()->except(['search', 'page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -46,7 +46,7 @@
                         @foreach($categories->whereNull('parent_id') as $category)
                             <div class="category-item">
                                 <div class="flex items-center justify-between">
-                                    <a href="{{ route('front.products.index', ['category' => $category->slug]) }}"
+                                    <a href="{{ route('front.postage.index', ['category' => $category->slug]) }}"
                                        class="text-gray-700 dark:text-gray-300 hover:text-purple-600 font-medium
                                               {{ request('category') == $category->slug && !request('subcategory') ? 'text-purple-600' : '' }}">
                                         {{ $category->name }}
@@ -68,7 +68,7 @@
                                                     $category->subcategories->pluck('slug')->contains(request('subcategory'))) 
                                                     ? '' : 'hidden' }}">
                                         @foreach($category->subcategories as $subcategory)
-                                            <a href="{{ route('front.products.index', [
+                                            <a href="{{ route('front.postage.index', [
                                                     'category' => $category->slug,
                                                     'subcategory' => $subcategory->slug
                                                 ]) }}"
@@ -88,7 +88,7 @@
                 <!-- Price Filter -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
                     <h3 class="text-lg font-semibold mb-4 dark:text-white">Price Range</h3>
-                    <form action="{{ route('front.products.index') }}" method="GET" class="space-y-4">
+                    <form action="{{ route('front.postage.index') }}" method="GET" class="space-y-4">
                         @foreach(request()->except(['min_price', 'max_price']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -123,7 +123,7 @@
                     <select onchange="window.location.href=this.value"
                             class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2">
                         @foreach($sortOptions as $value => $label)
-                            <option value="{{ route('front.products.index', array_merge(request()->except('sort'), ['sort' => $value])) }}"
+                            <option value="{{ route('front.postage.index', array_merge(request()->except('sort'), ['sort' => $value])) }}"
                                     {{ request('sort') === $value ? 'selected' : '' }}>
                                 {{ $label }}
                             </option>
@@ -134,7 +134,7 @@
                 <!-- Products Grid -->
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @forelse($products as $data)
-                        @include('front.products.includes.product-card')
+                        @include('front.postage.includes.product-card')
                     @empty
                         <div class="col-span-full text-center py-12">
                             <h3 class="text-xl text-gray-600 dark:text-gray-400">No products found</h3>

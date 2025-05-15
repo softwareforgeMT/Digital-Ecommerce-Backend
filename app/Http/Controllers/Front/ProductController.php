@@ -13,6 +13,8 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         // Add sort options
+        $path = request()->path();
+        
         $sortOptions = [
             '' => 'Name (A-Z)',
             'price_low' => 'Price (Low to High)',
@@ -21,6 +23,14 @@ class ProductController extends Controller
         ];
 
         $query = Product::with('category','subcategory')->active();
+        
+        // Filter by path type based on the JSON-encoded "checks" field
+        if ($path === "postage") {
+            $query->where('checks', 'like', '%postage_eligible%');
+        } elseif ($path === "products") {
+            $query->where('checks', 'like', '%featured%')
+            ->orWhere('checks', '[]');
+        }
         
         if ($request->category) {
             $query->whereHas('category', function($q) use ($request) {
@@ -45,7 +55,7 @@ class ProductController extends Controller
         if ($request->search) {
             $query->where(function($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
-                  ->orWhere('description', 'like', '%'.$request->search.'%');
+                ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -65,17 +75,25 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(12);
-        $categories = ProductCategory::active()->withCount('products')->get();
-      
 
+        $categories = ProductCategory::active()->withCount('products')->get();
         // Get min and max prices for filter
         $priceRange = Product::selectRaw('MIN(price) as min_price, MAX(price) as max_price')->first();
+        
+        if($path === "postage") {
+            return view('front.postage.index', compact('products', 'categories', 'priceRange', 'sortOptions'));
+        }
 
         return view('front.products.index', compact('products', 'categories', 'priceRange', 'sortOptions'));
     }
 
     public function show($slug)
     {
+
+        $path = request()->path();
+
+        $path= explode('/', $path);
+        
         $product = Product::where('slug', $slug)
             ->with(['category'])
             ->withCount('approvedReviews')
@@ -112,13 +130,24 @@ class ProductController extends Controller
                 ->exists();
         }
         //dd($canReview);
-        
+        if($path[0] === "postage") {
+            return view('front.postage.show', compact(
+                'product',
+                'related_products',
+                'reviews',
+                'userReview',
+                'canReview',
+                'path'
+            ));
+        }
+
         return view('front.products.show', compact(
             'product',
             'related_products',
             'reviews',
             'userReview',
-            'canReview'
+            'canReview',
+            'path'
         ));
     }
 

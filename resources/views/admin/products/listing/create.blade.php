@@ -20,9 +20,9 @@
                     @include('admin.includes.ajax-alerts')
                     @include('admin.products.listing.partials.inputs')
 
-                      <div class="col-12 mb-4 ">
-                                <button class="btn btn-primary submit-btn" type="submit">Submit form</button>
-                            </div>
+                      <div class="col-12 mb-4">
+                        <button class="btn btn-primary submit-btn" type="submit">Submit form</button>
+                    </div>
                 </form>
             </div>
         </div>
