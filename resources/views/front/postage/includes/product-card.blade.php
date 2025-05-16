@@ -33,7 +33,7 @@
                   {{ Str::limit(strip_tags($data->description), 80) }}
                 </p>
                 <div class="flex justify-between items-center mt-auto">
-                  <div>
+                  <!-- <div>
                     @if($data->discount_price && $data->discount_price < $data->paypostage_price)
                       <span class="text-xl font-bold text-blue-600 dark:text-blue-400">
                         {{ Helpers::setCurrency($data->discount_price) }}
@@ -46,7 +46,7 @@
                         {{ Helpers::setCurrency($data->paypostage_price) }}
                       </span>
                     @endif
-                  </div>
+                  </div> -->
                   <a href="{{ route('front.postage.show', $data->slug) }}"
                      class="bg-primary-gradient text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:shadow-lg transition-all duration-300 group">
                     <span>Details</span>

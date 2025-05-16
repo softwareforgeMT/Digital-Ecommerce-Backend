@@ -86,7 +86,7 @@
                 </div>
 
                 <!-- Price Filter -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+                <!-- <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
                     <h3 class="text-lg font-semibold mb-4 dark:text-white">Price Range</h3>
                     <form action="{{ route('front.postage.index') }}" method="GET" class="space-y-4">
                         @foreach(request()->except(['min_price', 'max_price']) as $key => $value)
@@ -112,7 +112,7 @@
                             Apply Filter
                         </button>
                     </form>
-                </div>
+                </div> -->
             </div>
 
             <!-- Main Content -->

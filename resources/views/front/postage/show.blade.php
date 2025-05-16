@@ -63,14 +63,14 @@
                             <span class="font-medium dark:text-white">{{ $product->type }}</span>
                         </div>
                     @endif
-                    <div class="flex items-center gap-2">
+                    <!-- <div class="flex items-center gap-2">
                         <span class="text-gray-600 dark:text-gray-400">Stock:</span>
                         @if($product->paypostage_stock > 0)
                             <span class="text-green-600">In Stock ({{ $product->paypostage_stock }} available)</span>
                         @else
                             <span class="text-red-600">Out of Stock</span>
                         @endif
-                    </div>
+                    </div> -->
                     <div class="flex items-center gap-2">
                         <span class="text-gray-600 dark:text-gray-400">Category:</span>
                         <span class="font-medium dark:text-white">{{ $product->category->name }}</span>
@@ -78,10 +78,10 @@
                 </div>
 
                 <!-- Price Section -->
-                <div class="mb-6">
+                <!-- <div class="mb-6">
                     @if($product->max_bits_allowed > 0)
                         <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
-                            <!-- Maximum Bits Price -->
+                           
                             <div class="mb-3">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,15 +91,13 @@
                                 </span>
                             </div>
                             
-                            <!-- Bit-discounted price -->
                             <div class="mb-2">
                                 <span class="text-4xl font-bold text-green-600 dark:text-green-400">
                                     {{ Helpers::setCurrency($product->getBitsDiscountedPricePostage()) }}
                                 </span>
                                 <span class="text-sm text-green-600 dark:text-green-400 ml-1">with max bits</span>
                             </div>
-                            
-                            <!-- Regular price -->
+
                             <div class="text-sm text-gray-600 dark:text-gray-400">
                                 Regular price:
                                 <span class="text-gray-900 dark:text-gray-300">{{ Helpers::setCurrency($product->paypostage_price) }}</span>
@@ -114,7 +112,7 @@
                             <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ Helpers::setCurrency($product->paypostage_price) }}</span>
                         </div>
                     @endif
-                </div>
+                </div> -->
 
                 <div class="mb-6">
                     <a href="{{ route('front.help.warranty') }}" 
@@ -410,14 +408,14 @@
                                  class="w-full aspect-square object-cover">
                             <div class="p-4">
                                 <h3 class="font-semibold text-gray-900 dark:text-white mb-2">{{ $relatedProduct->name }}</h3>
-                                <div class="flex items-center justify-between">
+                                <!-- <div class="flex items-center justify-between">
                                     @if($relatedProduct->discount_price)
                                         <span class="text-red-500 font-bold">{{ Helpers::setCurrency($relatedProduct->discount_price) }}</span>
                                         <span class="text-gray-500 line-through text-sm">{{ Helpers::setCurrency($relatedProduct->price) }}</span>
                                     @else
                                         <span class="text-purple-600 dark:text-purple-400 font-bold">{{ Helpers::setCurrency($relatedProduct->price) }}</span>
                                     @endif
-                                </div>
+                                </div> -->
                             </div>
                         </a>
                     @endforeach

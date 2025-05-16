@@ -226,6 +226,7 @@
         <a href="{{ route('front.blog.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">News</a>
         <a href="{{ route('front.products.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Store</a>
         <a href="{{ route('front.nostalgia.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">NostalgiaBase</a>
+        <a href="{{ route('front.postage.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Postage</a>
         <a href="{{ route('front.services.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Services</a>
         <a href="{{ route('front.bit.ledger') }}" class="text-gray-800 dark:text-gray-300 font-medium">Bit Logs</a>
 

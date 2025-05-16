@@ -27,10 +27,7 @@ class ProductController extends Controller
         // Filter by path type based on the JSON-encoded "checks" field
         if ($path === "postage") {
             $query->where('checks', 'like', '%postage_eligible%');
-        } elseif ($path === "products") {
-            $query->where('checks', 'like', '%featured%')
-            ->orWhere('checks', '[]');
-        }
+        } 
         
         if ($request->category) {
             $query->whereHas('category', function($q) use ($request) {
