@@ -148,8 +148,9 @@
             <i class="ri-attachment-2 me-2 text-primary"></i>
             <h5 class="card-title mb-0">Proof Submissions</h5>
             <span class="badge bg-primary rounded-pill ms-auto">
-                {{ count(json_decode($data->proof)) }} file(s)
+                {{ count( json_decode($data->proof, true) ?? [] ) }} file(s)
             </span>
+            
         </div>
         
         <div class="card-body p-3">
