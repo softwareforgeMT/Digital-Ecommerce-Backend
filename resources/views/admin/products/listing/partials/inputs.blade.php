@@ -131,12 +131,12 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Price ($) <span class="text-danger">*</span></label>
+                            <label class="form-label">Price (£) <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">£</span>
                                 <input type="number" name="price" class="form-control" step="0.01" min="0" value="{{ old('price', $data->price ?? '') }}" required>
                             </div>
-                            <small class="text-muted">Set the base price for this product (minimum $0.01)</small>
+                            <small class="text-muted">Set the base price for this product (minimum £0.01)</small>
                         </div>
                     </div>
                     <div class="col-md-6">
