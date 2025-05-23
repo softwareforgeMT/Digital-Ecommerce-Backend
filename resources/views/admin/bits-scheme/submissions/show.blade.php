@@ -155,35 +155,42 @@
         
         <div class="card-body p-3">
             <div class="row g-3">
-                @foreach(json_decode($data->proof) as $proof)
-                    @php
-                        $extension = pathinfo($proof, PATHINFO_EXTENSION);
-                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
-                        $isPdf = strtolower($extension) == 'pdf';
-                        $fileName = basename($proof);
-                        $fileColor = $isImage ? 'success' : ($isPdf ? 'danger' : 'info');
-                        $fileIcon = $isImage ? 'image' : ($isPdf ? 'file-pdf' : 'file-text');
-                    @endphp
-                    
-                    <div class="col-6 col-sm-4 col-lg-3">
-                        <a href="{!! Helpers::image($proof, 'bit-submissions/') !!}" 
-                           target="_blank" 
-                           class="text-decoration-none">
-                            <div class="border rounded position-relative overflow-hidden">
-                                <div class="p-3 d-flex align-items-center">
-                                    <div class="me-3 fs-4">
-                                        <i class="ri-{{ $fileIcon }}-line text-{{ $fileColor }}"></i>
+                @php
+                    $proofFiles = json_decode($data->proof, true) ?? [];
+                @endphp
+                
+                <div class="row11">
+                    @foreach($proofFiles as $proof)
+                        @php
+                            $extension = pathinfo($proof, PATHINFO_EXTENSION);
+                            $isImage   = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
+                            $isPdf     = strtolower($extension) === 'pdf';
+                            $fileName  = basename($proof);
+                            $fileColor = $isImage ? 'success' : ($isPdf ? 'danger' : 'info');
+                            $fileIcon  = $isImage ? 'image' : ($isPdf ? 'file-pdf' : 'file-text');
+                        @endphp
+                
+                        <div class="col-6 col-sm-4 col-lg-3 mb-4">
+                            <a href="{!! Helpers::image($proof, 'bit-submissions/') !!}"
+                            target="_blank"
+                            class="text-decoration-none">
+                                <div class="border rounded position-relative overflow-hidden">
+                                    <div class="p-3 d-flex align-items-center">
+                                        <div class="me-3 fs-4">
+                                            <i class="ri-{{ $fileIcon }}-line text-{{ $fileColor }}"></i>
+                                        </div>
+                                        <div class="text-truncate">
+                                            <p class="mb-0 text-truncate small">{{ $fileName }}</p>
+                                            <small class="text-muted text-uppercase">{{ $extension }}</small>
+                                        </div>
                                     </div>
-                                    <div class="text-truncate">
-                                        <p class="mb-0 text-truncate small">{{ $fileName }}</p>
-                                        <small class="text-muted text-uppercase">{{ $extension }}</small>
-                                    </div>
+                                    <div class="border-start border-5 border-{{ $fileColor }} position-absolute top-0 start-0 h-100"></div>
                                 </div>
-                                <div class="border-start border-5 border-{{ $fileColor }} position-absolute top-0 start-0 h-100"></div>
-                            </div>
-                        </a>
-                    </div>
-                @endforeach
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            
             </div>
         </div>
     </div>
