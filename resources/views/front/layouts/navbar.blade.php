@@ -29,10 +29,11 @@
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">News</a>
         <a href="{{ route('front.products.index') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Store</a>
+        <a href="{{ route('front.postage.index') }}" 
+           class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">JPP</a>
         <a href="{{ route('front.nostalgia.index') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">NostalgiaBase</a>
-        <a href="{{ route('front.postage.index') }}" 
-           class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Postage</a>
+        
         <a href="{{ route('front.services.index') }}" 
            class="text-gray-800 dark:text-gray-300 font-medium text-sm lg:text-base">Services</a>
         <a href="{{ route('front.bit.ledger') }}" 
@@ -225,8 +226,9 @@
         <a href="{{ route('front.index') }}" class="text-purple-600 font-medium dark:text-purple-400">Home</a>
         <a href="{{ route('front.blog.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">News</a>
         <a href="{{ route('front.products.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Store</a>
+        <a href="{{ route('front.postage.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">JPP</a>
         <a href="{{ route('front.nostalgia.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">NostalgiaBase</a>
-        <a href="{{ route('front.postage.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Postage</a>
+        
         <a href="{{ route('front.services.index') }}" class="text-gray-800 dark:text-gray-300 font-medium">Services</a>
         <a href="{{ route('front.bit.ledger') }}" class="text-gray-800 dark:text-gray-300 font-medium">Bit Logs</a>
 

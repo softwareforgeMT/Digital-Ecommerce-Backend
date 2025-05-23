@@ -19,7 +19,29 @@
         </div>
     </section>
 
+    
+
     <div class="container mx-auto px-4 py-12">
+
+                <!-- Welcome Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 border-l-4 border-purple-500">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-4">
+                            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Welcome to the JPP page!</h2>
+                            <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                Here, you can claim any available item listed simply by paying for the postage. This page is accessible to all members with a tier level of ** or higher.
+                            </p>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                You can unlock access by contributing to the community or by opting for the paid tier. This is our way of saying thank you for your support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Sidebar Filters -->
             <div class="lg:w-1/4">
@@ -85,34 +107,6 @@
                     </div>
                 </div>
 
-                <!-- Price Filter -->
-                <!-- <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-                    <h3 class="text-lg font-semibold mb-4 dark:text-white">Price Range</h3>
-                    <form action="{{ route('front.postage.index') }}" method="GET" class="space-y-4">
-                        @foreach(request()->except(['min_price', 'max_price']) as $key => $value)
-                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                        @endforeach
-                        <div class="flex gap-4">
-                            <div class="flex-1">
-                                <label class="text-sm text-gray-600 dark:text-gray-400">Min</label>
-                                <input type="number" name="min_price" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-600" 
-                                       value="{{ request('min_price', $priceRange->min_price ?? '') }}"
-                                       min="0" step="0.01">
-                            </div>
-                            <div class="flex-1">
-                                <label class="text-sm text-gray-600 dark:text-gray-400">Max</label>
-                                <input type="number" name="max_price" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-600" 
-                                       value="{{ request('max_price', $priceRange->max_price ?? '') }}"
-                                       min="0" step="0.01">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                            Apply Filter
-                        </button>
-                    </form>
-                </div> -->
             </div>
 
             <!-- Main Content -->
