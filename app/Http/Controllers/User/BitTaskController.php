@@ -115,19 +115,20 @@ class BitTaskController extends Controller
                 'required',
                 'array',
                 'min:1',
-                'max:'.config('fileformats.max_proof_images')
+                'max:' . config('fileformats.max_proof_images'),
             ];
             $rules['proof.*'] = [
                 'required',
                 'file',
                 'mimes:jpeg,png,jpg,pdf',
-                'max:2048'
+                'max:10240',  // ← 10 MB
             ];
         }
         
+        
         $messages = [
             'proof.max' => 'You can upload maximum '.config('fileformats.max_proof_images').' files.',
-            'proof.*.max' => 'Each file must not exceed 2MB.',
+            'proof.*.max' => 'Each file must not exceed 10MB.',
             'proof.*.mimes' => 'Only JPEG, PNG and PDF files are allowed.'
         ];
         

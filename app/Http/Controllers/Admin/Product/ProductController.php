@@ -221,6 +221,8 @@ class ProductController extends Controller
 
             if ($request->has('checks')) {
                 $product->checks = !empty($request->checks) ? json_encode($request->checks) : null;
+            }else{
+                $product->checks = null;
             }
 
             // Handle variations as JSON - Modified to prevent duplicates

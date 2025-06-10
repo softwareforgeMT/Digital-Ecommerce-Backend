@@ -128,7 +128,7 @@
                                                         </span>
                                                     </div>
                                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                        Accepted formats: JPEG, PNG, PDF. Max size: 2MB per file.
+                                                        Accepted formats: JPEG, PNG, PDF. Max size: 10MB per file.
                                                     </p>
                                                 </div>
                                             @endif

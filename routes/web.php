@@ -514,16 +514,22 @@ Route::post('dropzone/media',  [App\Http\Controllers\Front\HomeController::class
 
 
 // Product Routes
-Route::group(['prefix' => 'products'], function() {
-    Route::get('/', [App\Http\Controllers\Front\ProductController::class, 'index'])->name('front.products.index');
-    Route::get('/{slug}', [App\Http\Controllers\Front\ProductController::class, 'show'])->name('front.products.show');
-    Route::post('/get-variant-price', [App\Http\Controllers\Front\ProductController::class, 'getVariantPrice'])->name('front.products.variant-price');
-});
+Route::group([
+  'middleware' => 'underconstruction'
+], function() {
+    // Product Routes
+    Route::group(['prefix' => 'products'], function() {
+      Route::get('/', [App\Http\Controllers\Front\ProductController::class, 'index'])->name('front.products.index');
+      Route::get('/{slug}', [App\Http\Controllers\Front\ProductController::class, 'show'])->name('front.products.show');
+      Route::post('/get-variant-price', [App\Http\Controllers\Front\ProductController::class, 'getVariantPrice'])->name('front.products.variant-price');
+    });
 
-// Service Routes
-Route::get('/services', [App\Http\Controllers\Front\ServiceController::class, 'index'])->name('front.services.index');
-Route::get('/service/{slug}', [App\Http\Controllers\Front\ServiceController::class, 'show'])->name('front.services.show');
-Route::post('/services/quote',[App\Http\Controllers\Front\ServiceController::class, 'submitQuote'])->name('front.services.quote');
+    // Service Routes
+    Route::get('/services', [App\Http\Controllers\Front\ServiceController::class, 'index'])->name('front.services.index');
+    Route::get('/service/{slug}', [App\Http\Controllers\Front\ServiceController::class, 'show'])->name('front.services.show');
+    Route::post('/services/quote',[App\Http\Controllers\Front\ServiceController::class, 'submitQuote'])->name('front.services.quote');
+
+});
 
 // Blog Routes
 Route::get('/blog', [App\Http\Controllers\Front\BlogController::class, 'index'])->name('front.blog.index');

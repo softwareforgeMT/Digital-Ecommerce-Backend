@@ -200,11 +200,11 @@
             <!-- Sidebar -->
             <div class="lg:w-1/3">
                 <!-- Specifications -->
-                @if(!empty($item->formatted_specifications))
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-                        
-                        <div class="space-y-4">
-                            @foreach($item->formatted_specifications as $key => $value)
+                @if(! empty($item->formatted_specifications))
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+                    <div class="space-y-4">
+                        @foreach($item->formatted_specifications as $key => $value)
+                            @if($key !== 'desire')
                                 <div class="border-b border-gray-200 dark:border-gray-700 py-2 text-center">
                                     <div class="font-bold text-lg mb-1 text-gray-800 dark:text-gray-200">
                                         {{ Str::title(str_replace('_', ' ', $key)) }}
@@ -213,10 +213,12 @@
                                         {{ $value }}
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
+                            @endif
+                        @endforeach
                     </div>
-                @endif
+                </div>
+            @endif
+            
 
                 
             </div>

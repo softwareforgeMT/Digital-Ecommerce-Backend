@@ -131,13 +131,13 @@
                                    value="{{ old('specifications.color', $data->formatted_specifications['color'] ?? '') }}">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    {{-- <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Desire Rating</label>
                             <input type="number" name="specifications[desire]" class="form-control" min="0" max="10" 
                                    value="{{ old('specifications.desire', $data->formatted_specifications['desire'] ?? '') }}">
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Country</label>
@@ -145,7 +145,7 @@
                                    value="{{ old('specifications.country', $data->formatted_specifications['country'] ?? '') }}">
                         </div>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Release Date</label>
                             <input type="date" name="specifications[release_date]" class="form-control" 

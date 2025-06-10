@@ -70,6 +70,8 @@ class Kernel extends HttpKernel
         'permissions' => \App\Http\Middleware\Permissions::class,
         'super' => \App\Http\Middleware\SuperAdmin::class,
 
+        'underconstruction' => \App\Http\Middleware\UnderConstruction::class,
+
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'UserAuthenticated' => \App\Http\Middleware\UserAuthentication::class,
         'checkstatus' => \App\Http\Middleware\CheckUserStatus::class,
