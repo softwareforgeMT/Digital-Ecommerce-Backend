@@ -29,9 +29,9 @@
                     <span class="text-xs text-gray-500 ml-2">({{ $data->approved_reviews_count ?? 0 }})</span>
                   </div>
                 @endif
-                <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
+                {{-- <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
                   {{ Str::limit(strip_tags($data->description), 80) }}
-                </p>
+                </p> --}}
                 <div class="flex justify-between items-center mt-auto">
                   <!-- <div>
                     @if($data->discount_price && $data->discount_price < $data->paypostage_price)
