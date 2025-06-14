@@ -146,21 +146,46 @@
         <h2 class="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h2>
         <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
             <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                @for($i = 1; $i <= 5; $i++)
-                    <div class="py-4" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex justify-between items-center w-full text-left font-medium text-gray-900 dark:text-white">
-                            <span>Popular Question {{ $i }}</span>
-                            <svg class="w-5 h-5 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div x-show="open" x-collapse>
-                            <p class="mt-2 text-gray-600 dark:text-gray-300">
-                                This is the answer to the frequently asked question. It provides clear information that helps users understand our products, services, or policies better.
-                            </p>
-                        </div>
-                    </div>
-                @endfor
+       
+
+
+                @php
+$popularFaqs = [
+    [
+        'question' => 'Do your Xbox 360 consoles come with a clean Key Vault (KV)?',
+        'answer' => '✅ Yes – Unless otherwise stated, all Xbox 360 consoles come with a valid, unbanned Key Vault (KV).',
+    ],
+    [
+        'question' => "What's pre-installed on the Xbox 360 hard drive?",
+        'answer' => '✅ All hard drives come fully loaded and ready to use out of the box. No additional downloads are required.',
+    ],
+    [
+        'question' => 'Can I get a list of the installed games?',
+        'answer' => '❌ No',
+    ],
+    [
+        'question' => 'Do I need a JTAG or an RGH console?',
+        'answer' => '✅ No – An RGH system works the same as a JTAG for all practical purposes.',
+    ],
+];
+@endphp
+
+@foreach($popularFaqs as $faq)
+    <div class="py-4" x-data="{ open: false }">
+        <button @click="open = !open" class="flex justify-between items-center w-full text-left font-medium text-gray-900 dark:text-white">
+            <span>{{ $faq['question'] }}</span>
+            <svg class="w-5 h-5 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+        <div x-show="open" x-collapse>
+            <p class="mt-2 text-gray-600 dark:text-gray-300">
+                {!! nl2br(e($faq['answer'])) !!}
+            </p>
+        </div>
+    </div>
+@endforeach
+
             </div>
             <div class="mt-4 text-center">
                 <a href="{{ route('front.help.faqs') }}" class="inline-flex items-center px-5 py-2 bg-primary-gradient text-white font-medium rounded-lg transition-transform hover:-translate-y-1">

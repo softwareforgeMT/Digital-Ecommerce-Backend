@@ -317,12 +317,7 @@
                             <h3 class="text-xl font-semibold mt-8 mb-4 text-gray-900 dark:text-white">Payment Security</h3>
                             <p>Learn about the encryption and security measures we use to protect your payment information.</p>
                             
-                            <a href="#" class="mt-4 text-purple-600 dark:text-purple-400 font-medium inline-flex items-center">
-                                View Complete Security Guide
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
+                            
                         </div>
                     </div>
                 </div>
