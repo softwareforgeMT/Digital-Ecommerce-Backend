@@ -15,8 +15,7 @@ class CartLogics
         $userId = auth()->id();
 
         $cart = Cart::where(function($query) use ($sessionId, $userId) {
-            $query->where('session_id', $sessionId)
-                  ->orWhere('user_id', $userId);
+            $query->where('session_id', $sessionId);
         })->first();
 
         if (!$cart) {

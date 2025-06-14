@@ -515,7 +515,7 @@ Route::post('dropzone/media',  [App\Http\Controllers\Front\HomeController::class
 
 // Product Routes
 Route::group([
-  'middleware' => 'underconstruction'
+  // 'middleware' => 'underconstruction1'
 ], function() {
     // Product Routes
     Route::group(['prefix' => 'products'], function() {
