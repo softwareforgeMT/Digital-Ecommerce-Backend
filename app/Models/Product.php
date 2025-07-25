@@ -11,7 +11,7 @@ class Product extends Model
     protected $fillable = [
         'name', 'slug', 'sku', 'product_type', 'description', 'price', 
         'quantity', 'category_id', 'subcategory_id',
-        'tags', 'checks', 'views', 'variations', 'max_bits_allowed', 'paypostage_stock', 'paypostage_price'
+        'tags', 'checks', 'views', 'variations', 'max_bits_allowed', 'paypostage_stock', 'paypostage_price', 'weight'
     ];
 
     protected $casts = [

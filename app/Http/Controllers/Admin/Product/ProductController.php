@@ -48,6 +48,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
+            'weight' => 'nullable|integer|min:0',
             'tags' => 'nullable|string',
             'checks' => 'nullable|array',
             'checks.*' => 'in:featured,postage_eligible',
@@ -122,7 +123,48 @@ class ProductController extends Controller
         $optionTypes = OptionType::all();
                 
         return view('admin.products.listing.create', compact('categories', 'subcategories', 'optionTypes'));
+    }
+
+    public function getVariations($id = null)
+    {
+        $filterIds = $id ? explode(',', $id) : null;
+
+        $rawVariations = Product::select('variations')->get();
+        $uniqueVariations = [];
+
+        foreach ($rawVariations as $product) {
+            $decoded = json_decode($product->variations, true);
+            if (!$decoded) continue;
+
+            foreach ($decoded as $variationGroup) {
+                $typeId = (int) $variationGroup['option_type_id'];
+                $typeName = $variationGroup['option_type_name'];
+
+                if ($filterIds && !in_array($typeId, $filterIds)) continue;
+
+                foreach ($variationGroup['values'] as $val) {
+                    $key = $typeId . '|' . $val['value'];
+
+                    if (!isset($uniqueVariations[$key])) {
+                        $uniqueVariations[$key] = [
+                            'option_type_id' => $typeId,
+                            'option_type_name' => $typeName,
+                            'value' => $val['value'],
+                            'additional_price' => $val['additional_price'],
+                            'status' => $val['status']
+                        ];
+                    }
+                }
+            }
         }
+
+        $sorted = collect($uniqueVariations)->sortBy('option_type_id')->values()->all();
+
+        return response()->json($sorted);
+    }
+
+
+
 
     protected function handleGalleryUpload($request, $product = null)
     {
@@ -200,6 +242,7 @@ class ProductController extends Controller
             $product->product_type = $request->product_type;
             $product->description = $request->description;
             $product->price = $request->price;
+            $product->weight = $request->weight;
             $product->quantity = $request->quantity;
             $product->max_bits_allowed = $request->input('max_bits_allowed', 10);
             $product->paypostage_price = null;

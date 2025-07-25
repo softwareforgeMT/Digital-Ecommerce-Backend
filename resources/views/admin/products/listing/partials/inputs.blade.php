@@ -118,6 +118,11 @@
                             <label class="form-check-label">Postage Eligible</label>
                         </div>
                     </div>
+                    <div class="my-3">
+                            <label class="form-label">Product Weight <span class="text-danger">*</span></label>
+                            <input type="number" name="weight" class="form-control" min="0" value="{{ old('weight', $data->weight ?? '') }}" required>
+                            <small class="text-muted">Enter product weight</small>
+                        </div>
                 </div>
             </div>
         </div>
@@ -265,10 +270,36 @@
         }
     });
 
+async function fetchVariations(id) {
+  try {
+    const baseUrl = '/management0712/products/variations/'
+    const url = baseUrl + id
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const variations = await response.json();
+    console.log('Fetched Variations:', variations);
+    return variations;
+
+  } catch (error) {
+    console.error('Failed to fetch variations:', error);
+    return [];
+  }
+}
+
+
 function addSelectedOptionType() {
+    
     const select = document.getElementById('optionTypeSelect');
     const typeId = select.value;
     const typeName = select.options[select.selectedIndex].dataset.name;
+
+    const variations = fetchVariations(typeId);
+    console.log(variations);
     
     if (!typeId) {
         alert('Please select an option type');

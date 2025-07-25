@@ -54,6 +54,7 @@ use App\Http\Controllers\Admin\BitScheme\BitTaskController;
 use App\Http\Controllers\Admin\BitScheme\BitSubmissionController;
 use App\Http\Controllers\User\BitTaskController as UserBitTaskController;
 use App\Http\Controllers\User\BitWalletController;
+use Illuminate\Support\Facades\Artisan;
 
 /*
 |--------------------------------------------------------------------------
@@ -153,17 +154,20 @@ Route::prefix('management0712')->group(function() {
     // Product Routes
     Route::get('/products/datatables', [ProductController::class, 'datatables'])->name('admin.product.datatables');
     Route::get('/products', [ProductController::class, 'index'])->name('admin.product.index');
+    Route::get('/products/variations/{id?}', [ProductController::class, 'getVariations'])->name('admin.product.variations');
     Route::get('/product/create', [ProductController::class, 'create'])->name('admin.product.create');
     Route::post('/product/create', [ProductController::class, 'store'])->name('admin.product.store');
     Route::get('/product/edit/{id}', [ProductController::class, 'edit'])->name('admin.product.edit');
     Route::post('/product/edit/{id}', [ProductController::class, 'update'])->name('admin.product.update');
     Route::get('/product/delete/{id}', [ProductController::class, 'destroy'])->name('admin.product.delete');
     Route::get('/product/status/{id1}/{id2}', [ProductController::class, 'status'])->name('admin.product.status');
-    
   });
 
 
 
+  
+  
+  
   Route::group(['middleware'=>'permissions:support_tickets'],function(){
     Route::get('tickets/datatables', [AdminTicketController::class, 'datatables'])->name('admin.tickets.datatables');
     Route::get('/tickets/datatables', [AdminTicketController::class, 'datatables'])->name('admin.tickets.datatables');
@@ -171,12 +175,12 @@ Route::prefix('management0712')->group(function() {
     Route::get('/tickets/{id}', [AdminTicketController::class, 'show'])->name('admin.tickets.show');
     Route::post('/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
     Route::post('/tickets/{id}/status', [AdminTicketController::class, 'updateStatus'])->name('admin.tickets.status');
-});
-
-
-
-
-
+  });
+  
+  
+  
+  
+  
   Route::group(['middleware'=>'permissions:orders'],function(){
     //Order Routes
     Route::get('/orders/datatables',[OrderController::class, 'datatables'])->name('admin.orders.datatables');
@@ -187,7 +191,7 @@ Route::prefix('management0712')->group(function() {
     Route::post('/orders/status/',[OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
     Route::get('/orders/delete/{id}',[OrderController::class, 'delete'])->name('admin.orders.delete');
   });  
-
+  
   Route::group(['middleware'=>'permissions:coupon'],function(){
     //Company Routes
     Route::get('/coupon/datatables',[CouponController::class, 'datatables'])->name('admin.coupon.datatables');
@@ -199,15 +203,15 @@ Route::prefix('management0712')->group(function() {
     Route::get('/coupon/delete/{id}',[CouponController::class, 'destroy'])->name('admin.coupon.delete');
     Route::get('/coupon/status/{id1}/{id2}',[CouponController::class, 'status'])->name('admin.coupon.status');
   });  
+  
+  
+  
+  
 
-
-
-
-
-
- 
-
-
+  
+  
+  
+  
   
   Route::group(['middleware'=>'permissions:users'],function(){
     Route::get('/users/datatables',[App\Http\Controllers\Admin\UserController::class, 'usersDataTables'])->name('admin.users.datatables');
@@ -216,42 +220,42 @@ Route::prefix('management0712')->group(function() {
     Route::get('/users/show/{id}',[App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.users.show');
 
     Route::post('/users/update/{id}',[App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update'); 
-
+    
     Route::post('/users/update/membership/{id}',[App\Http\Controllers\Admin\UserController::class, 'updateMembership'])->name('admin.users.membership.update'); 
-
-     Route::get('/users/status/{id1}/{id2}',[App\Http\Controllers\Admin\UserController::class, 'status'])->name('admin.user.status');
-     
-     //Email Campaign
-     Route::get('/users/email/campaign',[App\Http\Controllers\Admin\UserController::class, 'emailCampaign'])->name('admin.users.email.campaign');
-      Route::post('/users/email/campaign',[App\Http\Controllers\Admin\UserController::class, 'sendCampaignEmail'])->name('admin.users.email.campaign.submit');
+    
+    Route::get('/users/status/{id1}/{id2}',[App\Http\Controllers\Admin\UserController::class, 'status'])->name('admin.user.status');
+    
+    //Email Campaign
+    Route::get('/users/email/campaign',[App\Http\Controllers\Admin\UserController::class, 'emailCampaign'])->name('admin.users.email.campaign');
+    Route::post('/users/email/campaign',[App\Http\Controllers\Admin\UserController::class, 'sendCampaignEmail'])->name('admin.users.email.campaign.submit');
     
     Route::get('/users/secret/login/{id}',[App\Http\Controllers\Admin\UserController::class, 'secret'])->name('admin.user.secret');
     
     // Route::get('/secret/{email}',[App\Http\Controllers\Admin\UserController::class, 'secretlogin'])->name('admin.users.secretlogin');
-
+    
     Route::get('/users/delete/{id}',[App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
-
+    
     Route::get('/subscribed/users/datatables',[App\Http\Controllers\Admin\UserController::class, 'subscribedusersDataTables'])->name('admin.users.subscribed.datatables');
     Route::get('/subscribed/users',[App\Http\Controllers\Admin\UserController::class, 'subscribedusers'])->name('admin.users.subscribed.index');
   });
 
-
+  
   Route::group(['middleware' => 'permissions:nostalgia'], function () {
     Route::prefix('nostalgia')->name('admin.nostalgia.')->group(function () {
-        // Category Routes
-        Route::get('/categories/datatables', [NostalgiaCategoryController::class, 'datatables'])->name('category.datatables');
-        Route::get('/categories', [NostalgiaCategoryController::class, 'index'])->name('category.index');
-        Route::get('/category/create', [NostalgiaCategoryController::class, 'create'])->name('category.create');
-        Route::post('/category/store', [NostalgiaCategoryController::class, 'store'])->name('category.store');
-        Route::get('/category/edit/{id}', [NostalgiaCategoryController::class, 'edit'])->name('category.edit');
-        Route::post('/category/update/{id}', [NostalgiaCategoryController::class, 'update'])->name('category.update');
-        Route::get('/category/delete/{id}', [NostalgiaCategoryController::class, 'destroy'])->name('category.delete');
-        Route::get('/category/status/{id1}/{id2}', [NostalgiaCategoryController::class, 'status'])->name('category.status');
-        Route::get('/category/parents', [NostalgiaCategoryController::class, 'getParentCategories'])->name('category.parents');
-
-        // Item Routes
-        Route::get('/items/datatables', [NostalgiaItemController::class, 'datatables'])->name('item.datatables');
-        Route::get('/items', [NostalgiaItemController::class, 'index'])->name('item.index');
+      // Category Routes
+      Route::get('/categories/datatables', [NostalgiaCategoryController::class, 'datatables'])->name('category.datatables');
+      Route::get('/categories', [NostalgiaCategoryController::class, 'index'])->name('category.index');
+      Route::get('/category/create', [NostalgiaCategoryController::class, 'create'])->name('category.create');
+      Route::post('/category/store', [NostalgiaCategoryController::class, 'store'])->name('category.store');
+      Route::get('/category/edit/{id}', [NostalgiaCategoryController::class, 'edit'])->name('category.edit');
+      Route::post('/category/update/{id}', [NostalgiaCategoryController::class, 'update'])->name('category.update');
+      Route::get('/category/delete/{id}', [NostalgiaCategoryController::class, 'destroy'])->name('category.delete');
+      Route::get('/category/status/{id1}/{id2}', [NostalgiaCategoryController::class, 'status'])->name('category.status');
+      Route::get('/category/parents', [NostalgiaCategoryController::class, 'getParentCategories'])->name('category.parents');
+      
+      // Item Routes
+      Route::get('/items/datatables', [NostalgiaItemController::class, 'datatables'])->name('item.datatables');
+      Route::get('/items', [NostalgiaItemController::class, 'index'])->name('item.index');
         Route::get('/item/create', [NostalgiaItemController::class, 'create'])->name('item.create');
         Route::post('/item/store', [NostalgiaItemController::class, 'store'])->name('item.store');
         Route::get('/item/edit/{id}', [NostalgiaItemController::class, 'edit'])->name('item.edit');
@@ -262,12 +266,12 @@ Route::prefix('management0712')->group(function() {
         Route::get('/get-childcategories/{subcategory_id}', [NostalgiaItemController::class, 'getChildcategories'])->name('item.childcategories');
     });
   });
-
+  
   Route::group(['middleware' => 'permissions:services'], function () {
     // Service Category Routes
     Route::prefix('service')->name('admin.service.')->group(function () {
-        // Category Routes
-        Route::get('/categories/datatables', [ServiceCategoryController::class, 'datatables'])->name('category.datatables');
+      // Category Routes
+      Route::get('/categories/datatables', [ServiceCategoryController::class, 'datatables'])->name('category.datatables');
         Route::get('/categories', [ServiceCategoryController::class, 'index'])->name('category.index');
         Route::get('/category/create', [ServiceCategoryController::class, 'create'])->name('category.create');
         Route::post('/category/store', [ServiceCategoryController::class, 'store'])->name('category.store');
@@ -275,7 +279,7 @@ Route::prefix('management0712')->group(function() {
         Route::post('/category/update/{id}', [ServiceCategoryController::class, 'update'])->name('category.update');
         Route::get('/category/delete/{id}', [ServiceCategoryController::class, 'destroy'])->name('category.delete');
         Route::get('/category/status/{id1}/{id2}', [ServiceCategoryController::class, 'status'])->name('category.status');
-
+        
         // Service Item Routes
         Route::get('/items/datatables', [ServiceItemController::class, 'datatables'])->name('item.datatables');
         Route::get('/items', [ServiceItemController::class, 'index'])->name('item.index');
@@ -285,11 +289,11 @@ Route::prefix('management0712')->group(function() {
         Route::post('/item/update/{id}', [ServiceItemController::class, 'update'])->name('item.update');
         Route::get('/item/delete/{id}', [ServiceItemController::class, 'destroy'])->name('item.delete');
         Route::get('/item/status/{id1}/{id2}', [ServiceItemController::class, 'status'])->name('item.status');
+      });
     });
-  });
-
-  Route::group(['middleware' => 'permissions:blogs'], function () {
-    Route::prefix('blog')->name('admin.blog.')->group(function () {
+    
+    Route::group(['middleware' => 'permissions:blogs'], function () {
+      Route::prefix('blog')->name('admin.blog.')->group(function () {
         // Blog Category Routes
         Route::get('/categories/datatables', [BlogCategoryController::class, 'datatables'])->name('category.datatables');
         Route::get('/categories', [BlogCategoryController::class, 'index'])->name('category.index');
@@ -299,7 +303,7 @@ Route::prefix('management0712')->group(function() {
         Route::post('/category/update/{id}', [BlogCategoryController::class, 'update'])->name('category.update');
         Route::get('/category/delete/{id}', [BlogCategoryController::class, 'destroy'])->name('category.delete');
         Route::get('/category/status/{id1}/{id2}', [BlogCategoryController::class, 'status'])->name('category.status');
-
+        
         // Blog Post Routes
         Route::get('/posts/datatables', [BlogController::class, 'datatables'])->name('datatables');
         Route::get('/posts', [BlogController::class, 'index'])->name('index');
@@ -309,15 +313,15 @@ Route::prefix('management0712')->group(function() {
         Route::post('/post/update/{id}', [BlogController::class, 'update'])->name('update');
         Route::get('/post/delete/{id}', [BlogController::class, 'destroy'])->name('delete');
         Route::get('/post/status/{id1}/{id2}', [BlogController::class, 'status'])->name('status');
+      });
     });
-  });
-
-
-
-  // Add the Bit Management System Routes
-  Route::group(['middleware'=>'permissions:bit_management'],function(){
-
-
+    
+    
+    
+    // Add the Bit Management System Routes
+    Route::group(['middleware'=>'permissions:bit_management'],function(){
+      
+      
       // Bit Tasks Admin Routes
       Route::get('/bit-tasks/datatables',[BitTaskController::class, 'datatables'])->name('admin.bit-tasks.datatables');
       Route::get('/bit-tasks',[BitTaskController::class, 'index'])->name('admin.bit-tasks.index');
@@ -334,10 +338,10 @@ Route::prefix('management0712')->group(function() {
       Route::get('/bit-submissions/pending',[BitSubmissionController::class, 'pending'])->name('admin.bit-submissions.pending');
       Route::get('/bit-submissions/show/{id}',[BitSubmissionController::class, 'show'])->name('admin.bit-submissions.show');
       Route::post('/bit-submissions/review/{id}',[BitSubmissionController::class, 'review'])->name('admin.bit-submissions.review');
-  });
-  Route::group(['middleware'=>'permissions:reviews'],function(){
-    // Reviews management
-    Route::group(['prefix' => 'reviews', 'as' => 'admin.reviews.'], function () {
+    });
+    Route::group(['middleware'=>'permissions:reviews'],function(){
+      // Reviews management
+      Route::group(['prefix' => 'reviews', 'as' => 'admin.reviews.'], function () {
         Route::get('/', [App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('index');
         Route::get('/datatables', [App\Http\Controllers\Admin\ReviewController::class, 'datatables'])->name('datatables');
         Route::get('/{id}/edit', [App\Http\Controllers\Admin\ReviewController::class, 'edit'])->name('edit');
@@ -345,8 +349,8 @@ Route::prefix('management0712')->group(function() {
         Route::get('/{id}/delete', [App\Http\Controllers\Admin\ReviewController::class, 'delete'])->name('delete');
         Route::post('/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('bulk-approve');
         Route::post('/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('bulk-reject');
-    });
-  }); 
+      });
+    }); 
 
 
 
